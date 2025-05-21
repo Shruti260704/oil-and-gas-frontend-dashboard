@@ -4,7 +4,7 @@ import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Compare } from "lucide-react";
+import { FileText } from "lucide-react";
 
 const FileCompare = ({ files }: { files: FileData[] }) => {
   if (files.length !== 2) {
@@ -75,7 +75,7 @@ const FileCompare = ({ files }: { files: FileData[] }) => {
   return (
     <div>
       <div className="bg-blue-50 p-4 rounded-lg mb-6 flex items-center">
-        <Compare className="h-5 w-5 mr-3 text-blue-600" />
+        <FileText className="h-5 w-5 mr-3 text-blue-600" />
         <p className="text-sm">
           Comparing <span className="font-semibold">{file1.name}</span> with <span className="font-semibold">{file2.name}</span>
         </p>

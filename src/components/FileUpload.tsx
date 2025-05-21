@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileData, FileType } from '../types/files';
 import { toast } from "sonner";
-import { FileText, FilePdf, FileExcel, FilePlus, Upload } from "lucide-react";
+import { FileText, File, Upload } from "lucide-react";
 
 const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -39,9 +39,9 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
   const getFileIcon = (fileType: FileType) => {
     switch (fileType) {
       case 'pdf':
-        return <FilePdf className="h-5 w-5 text-red-500" />;
+        return <File className="h-5 w-5 text-red-500" />;
       case 'excel':
-        return <FileExcel className="h-5 w-5 text-green-600" />;
+        return <File className="h-5 w-5 text-green-600" />;
       case 'csv':
         return <FileText className="h-5 w-5 text-blue-500" />;
       case 'powerpoint':
@@ -180,10 +180,10 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
         <h3 className="text-sm font-medium mb-2">Supported File Types:</h3>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
-            <FilePdf className="h-4 w-4 text-red-500" /> PDF Documents
+            <File className="h-4 w-4 text-red-500" /> PDF Documents
           </div>
           <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
-            <FileExcel className="h-4 w-4 text-green-600" /> Excel Spreadsheets
+            <File className="h-4 w-4 text-green-600" /> Excel Spreadsheets
           </div>
           <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
             <FileText className="h-4 w-4 text-orange-500" /> PowerPoint Slides
