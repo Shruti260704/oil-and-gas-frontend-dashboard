@@ -1,4 +1,3 @@
-
 import React, { useState, ChangeEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,14 +138,17 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
   return (
     <div>
       <div
-        className={`file-upload-area ${isDragging ? 'border-blue-400 bg-blue-50' : ''}`}
+        className={`file-upload-area ${isDragging ? 'border-blue-400 bg-blue-50' : ''} ${isProcessing ? 'bg-blue-50/50' : ''}`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center justify-center text-center">
-          <Upload className="h-10 w-10 text-blue-500 mb-4" />
+          <div className={`rounded-full p-3 mb-4 ${isProcessing ? 'bg-blue-100 animate-pulse' : 'bg-blue-100'}`}>
+            <Upload className="h-10 w-10 text-blue-500" />
+          </div>
+          
           <p className="text-sm font-medium">
             {isProcessing ? 'Processing file...' : 'Drag & Drop files here'}
           </p>
@@ -158,10 +160,10 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
             <label htmlFor="file-upload" className="cursor-pointer">
               <Button 
                 variant="outline" 
-                className="relative"
+                className="relative shadow-sm hover:shadow-md transition-shadow"
                 disabled={isProcessing}
               >
-                <span>Browse Files</span>
+                <span>{isProcessing ? 'Processing...' : 'Browse Files'}</span>
                 <Input
                   id="file-upload"
                   type="file"
@@ -176,19 +178,19 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
         </div>
       </div>
 
-      <div className="mt-4">
-        <h3 className="text-sm font-medium mb-2">Supported File Types:</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
+      <div className="mt-6">
+        <h3 className="text-sm font-medium mb-3 text-gray-600">Supported File Types:</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
             <File className="h-4 w-4 text-red-500" /> PDF Documents
           </div>
-          <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
             <File className="h-4 w-4 text-green-600" /> Excel Spreadsheets
           </div>
-          <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
             <FileText className="h-4 w-4 text-orange-500" /> PowerPoint Slides
           </div>
-          <div className="flex items-center gap-2 text-xs p-1.5 bg-gray-50 rounded">
+          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
             <FileText className="h-4 w-4 text-blue-500" /> CSV Data Files
           </div>
         </div>

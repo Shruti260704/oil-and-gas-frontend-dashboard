@@ -123,3 +123,33 @@
 .file-upload-area:hover {
   @apply border-primary bg-blue-50;
 }
+
+/* Enhanced styling for dashboard */
+.dashboard-header {
+  @apply bg-gradient-to-r from-blue-700 to-blue-500 text-white py-6 px-4 rounded-lg shadow-lg mb-8;
+}
+
+.card-gradient {
+  @apply bg-gradient-to-br from-white to-blue-50;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px];
+}
+
+.file-item {
+  @apply transition-all duration-200;
+}
+
+.file-item:hover {
+  @apply bg-blue-50;
+}
+
+.file-item.selected {
+  @apply bg-primary text-white;
+}
+
+.tabs-custom .tabs-list {
+  @apply bg-gradient-to-r from-blue-100 to-blue-50 p-1 rounded-lg;
+}
+
