@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { FileData } from '../types/files';
+import { Network } from 'lucide-react';
 
 const MindMap = ({ file }: { file: FileData }) => {
   useEffect(() => {
@@ -16,17 +17,17 @@ const MindMap = ({ file }: { file: FileData }) => {
     if (!topics || topics.length === 0) {
       return (
         <div className="text-center py-6">
-          <p className="text-gray-500">No topic structure available for this file</p>
+          <p className="text-blue-400">No topic structure available for this file</p>
         </div>
       );
     }
     
     return (
-      <div className="relative h-[400px] w-full overflow-auto bg-blue-50/50 rounded-lg p-4">
+      <div className="relative h-[400px] w-full overflow-auto bg-blue-950/40 rounded-lg p-4 backdrop-blur-sm border border-blue-900/30">
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
           {/* Center node (file name) */}
           <div className="relative">
-            <div className="mind-map-node mind-map-node-parent bg-primary text-white px-4 py-2 rounded-lg shadow">
+            <div className="mind-map-node mind-map-node-parent px-4 py-2 rounded-lg shadow-lg shadow-primary/20">
               {file.name}
             </div>
             
@@ -87,14 +88,14 @@ const MindMap = ({ file }: { file: FileData }) => {
         </div>
         
         {/* Legend */}
-        <div className="absolute bottom-2 right-2 bg-white p-2 rounded shadow-sm text-xs">
+        <div className="absolute bottom-2 right-2 bg-blue-950/50 p-2 rounded-lg shadow-sm text-xs backdrop-blur-sm border border-blue-900/30">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
-            <span>Main Topic</span>
+            <span className="text-blue-200">Main Topic</span>
           </div>
           <div className="flex items-center mt-1">
-            <div className="w-3 h-3 border border-blue-300 bg-white rounded-full mr-2"></div>
-            <span>Subtopic</span>
+            <div className="w-3 h-3 border border-primary/30 bg-primary/10 rounded-full mr-2"></div>
+            <span className="text-blue-200">Subtopic</span>
           </div>
         </div>
       </div>
@@ -103,14 +104,17 @@ const MindMap = ({ file }: { file: FileData }) => {
 
   return (
     <div className="mind-map-container">
-      <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
-        <h3 className="text-lg font-medium mb-2">File Structure: {file.name}</h3>
-        <p className="text-sm text-gray-600 mb-4">{file.content.summary}</p>
+      <div className="bg-blue-950/30 rounded-lg p-4 shadow-md mb-4 backdrop-blur-sm border border-blue-900/30">
+        <h3 className="text-lg font-medium mb-3 text-blue-100 flex items-center gap-2">
+          <Network className="h-4 w-4 text-primary" />
+          File Structure: {file.name}
+        </h3>
+        <p className="text-sm text-blue-300 mb-4">{file.content.summary}</p>
         {renderMindMap()}
         
-        <div className="mt-4 bg-gray-50 p-3 rounded-md">
-          <h4 className="text-sm font-medium mb-2">Content Topics</h4>
-          <ul className="list-disc pl-5 text-sm">
+        <div className="mt-4 bg-blue-950/50 p-4 rounded-lg border border-blue-900/30">
+          <h4 className="text-sm font-medium mb-2 text-blue-100">Content Topics</h4>
+          <ul className="list-disc pl-5 text-sm text-blue-300 space-y-1">
             {file.content.topics.map((topic, index) => (
               <li key={index} className="mb-1">{topic}</li>
             ))}

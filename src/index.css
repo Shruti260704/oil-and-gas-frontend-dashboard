@@ -5,74 +5,44 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 13% 7%; /* Bluish-black background */
+    --foreground: 210 20% 98%; /* Light text color */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 13% 10%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 13% 10%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 215 100% 34%;
+    --primary: 210 100% 55%; /* Brighter blue primary */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 13% 15%;
+    --muted-foreground: 215.4 16.3% 76.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 220 13% 15%;
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 215 100% 14%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 210 100% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 100% 20%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 215 100% 18%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 48%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 13% 10%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 210 100% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 15%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 13% 15%;
+    --sidebar-ring: 210 100% 65%;
   }
 }
 
@@ -104,52 +74,115 @@
 }
 
 .mind-map-node {
-  @apply p-2 bg-white border border-blue-300 rounded-md shadow-sm text-sm;
+  @apply p-2 bg-primary/10 border border-primary/30 rounded-md shadow-md text-sm backdrop-blur-sm;
 }
 
 .mind-map-node-parent {
-  @apply bg-blue-100 font-medium;
+  @apply bg-primary text-white font-medium;
 }
 
 .mind-map-link {
-  @apply stroke-blue-400 stroke-2;
+  @apply stroke-primary/60 stroke-2;
 }
 
 /* File uploader styling */
 .file-upload-area {
-  @apply border-2 border-dashed rounded-lg p-8 transition-all duration-200 ease-in-out;
+  @apply border-2 border-dashed rounded-lg p-8 transition-all duration-300 ease-in-out bg-blue-950/30 border-blue-700/50;
 }
 
 .file-upload-area:hover {
-  @apply border-primary bg-blue-50;
+  @apply border-primary bg-blue-950/50 shadow-lg shadow-primary/20;
 }
 
 /* Enhanced styling for dashboard */
 .dashboard-header {
-  @apply bg-gradient-to-r from-blue-700 to-blue-500 text-white py-6 px-4 rounded-lg shadow-lg mb-8;
+  @apply bg-gradient-to-r from-blue-900 to-blue-800 text-white py-8 px-6 rounded-xl shadow-xl mb-8 border border-blue-700/40 backdrop-blur-sm;
 }
 
 .card-gradient {
-  @apply bg-gradient-to-br from-white to-blue-50;
+  @apply bg-gradient-to-br from-blue-950/70 to-blue-900/40 backdrop-blur-sm border-blue-800/40;
 }
 
 .card-hover {
-  @apply transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px];
+  @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:translate-y-[-4px] border border-blue-800/30;
 }
 
 .file-item {
-  @apply transition-all duration-200;
+  @apply transition-all duration-200 border border-transparent;
 }
 
 .file-item:hover {
-  @apply bg-blue-50;
+  @apply bg-blue-900/30 border-blue-700/30;
 }
 
 .file-item.selected {
-  @apply bg-primary text-white;
+  @apply bg-primary text-white border-primary/50 shadow-md shadow-primary/20;
 }
 
 .tabs-custom .tabs-list {
-  @apply bg-gradient-to-r from-blue-100 to-blue-50 p-1 rounded-lg;
+  @apply bg-gradient-to-r from-blue-950 to-blue-900 p-1 rounded-lg border border-blue-800/40;
 }
 
+/* Adding glow effects for interactive elements */
+.glow-effect {
+  @apply relative;
+}
+
+.glow-effect::after {
+  content: '';
+  @apply absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 bg-primary/20 blur-xl;
+  z-index: -1;
+}
+
+.glow-effect:hover::after {
+  @apply opacity-100;
+}
+
+/* Enhanced empty state */
+.empty-state {
+  @apply bg-gradient-to-br from-blue-950/80 to-blue-900/40 rounded-lg border-2 border-dashed border-blue-800/40 backdrop-blur-sm;
+}
+
+/* Glass effect cards */
+.glass-card {
+  @apply backdrop-blur-md bg-blue-950/30 border border-blue-700/30;
+}
+
+/* Section titles */
+.section-title {
+  @apply text-xl font-semibold mb-4 text-blue-100 flex items-center gap-2;
+}
+
+/* Enhanced visualizations background */
+.viz-bg {
+  @apply bg-blue-950/20 rounded-lg p-4 border border-blue-900/40;
+}
+
+/* Updated Selected File Indicator */
+.selected-indicator {
+  @apply bg-primary rounded-full w-2 h-2 absolute left-[-8px] top-1/2 transform -translate-y-1/2 shadow-glow;
+}
+
+/* Enhanced buttons */
+.btn-primary {
+  @apply bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-primary/20;
+}
+
+/* Shadow glow effect */
+.shadow-glow {
+  box-shadow: 0 0 15px theme('colors.primary.DEFAULT');
+}
+
+/* Enhanced scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-blue-950/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full hover:bg-primary/70 transition-colors duration-200;
+}
