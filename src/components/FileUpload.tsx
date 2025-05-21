@@ -177,24 +177,6 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
           </div>
         </div>
       </div>
-
-      <div className="mt-6">
-        <h3 className="text-sm font-medium mb-3 text-gray-600">Supported File Types:</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
-            <File className="h-4 w-4 text-red-500" /> PDF Documents
-          </div>
-          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
-            <File className="h-4 w-4 text-green-600" /> Excel Spreadsheets
-          </div>
-          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
-            <FileText className="h-4 w-4 text-orange-500" /> PowerPoint Slides
-          </div>
-          <div className="flex items-center gap-2 text-xs p-2.5 bg-white shadow-sm border border-gray-100 rounded-md transition-all hover:shadow-md">
-            <FileText className="h-4 w-4 text-blue-500" /> CSV Data Files
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
