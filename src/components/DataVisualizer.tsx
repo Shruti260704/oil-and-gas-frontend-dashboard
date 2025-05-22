@@ -69,6 +69,14 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
   const barData = transformDataForLineAndBar();
   const pieData = transformDataForPie();
   
+  // Helper function to format label names safely
+  const formatName = (name: string | number): string => {
+    if (typeof name === 'string') {
+      return name.length > 12 ? `${name.substring(0, 12)}...` : name;
+    }
+    return String(name);
+  };
+  
   return (
     <div>
       <p className="text-gray-600 mb-6 break-words">{summary}</p>
@@ -110,7 +118,7 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         dataKey={key} 
                         stroke={COLORS[index % COLORS.length]} 
                         activeDot={{ r: 8 }}
-                        name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
+                        name={formatName(key)}
                       />
                     ))}
                   </LineChart>
@@ -148,7 +156,7 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         key={key} 
                         dataKey={key} 
                         fill={COLORS[index % COLORS.length]} 
-                        name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
+                        name={formatName(key)}
                       />
                     ))}
                   </BarChart>
@@ -176,8 +184,10 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                       fill="#8884d8"
                       dataKey="value"
                       label={({ name, percent }) => {
-                        // Truncate long names in the label
-                        const displayName = name.length > 10 ? `${name.substring(0, 10)}...` : name;
+                        // Safely format the name
+                        const displayName = typeof name === 'string' 
+                          ? (name.length > 10 ? `${name.substring(0, 10)}...` : name)
+                          : String(name);
                         return `${displayName}: ${(percent * 100).toFixed(0)}%`;
                       }}
                     >
@@ -185,9 +195,19 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value, name) => [value, name.length > 15 ? `${name.substring(0, 15)}...` : name]} />
+                    <Tooltip formatter={(value, name) => {
+                      const formattedName = typeof name === 'string'
+                        ? (name.length > 15 ? `${name.substring(0, 15)}...` : name)
+                        : String(name);
+                      return [value, formattedName];
+                    }} />
                     <Legend 
-                      formatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+                      formatter={(value) => {
+                        if (typeof value === 'string') {
+                          return value.length > 15 ? `${value.substring(0, 15)}...` : value;
+                        }
+                        return String(value);
+                      }}
                       wrapperStyle={{ fontSize: '12px' }} 
                     />
                   </PieChart>
@@ -226,7 +246,7 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         dataKey={key} 
                         stackId="a"
                         fill={COLORS[index % COLORS.length]} 
-                        name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
+                        name={formatName(key)}
                       />
                     ))}
                   </BarChart>

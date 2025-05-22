@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,6 +36,14 @@ const InsightPanel = ({ file }: { file: FileData }) => {
   
   // Define chart colors
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  
+  // Helper function to format label names safely
+  const formatName = (name: string | number): string => {
+    if (typeof name === 'string') {
+      return name.length > 12 ? `${name.substring(0, 12)}...` : name;
+    }
+    return String(name);
+  };
   
   // Transform data for charts
   const transformDataForLineAndBar = () => {
@@ -186,7 +195,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                           dataKey={key} 
                           stroke={COLORS[index % COLORS.length]} 
                           activeDot={{ r: 8 }}
-                          name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
+                          name={formatName(key)}
                         />
                       ))}
                     </LineChart>
@@ -225,7 +234,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                           key={key} 
                           dataKey={key} 
                           fill={COLORS[index % COLORS.length]} 
-                          name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
+                          name={formatName(key)}
                         />
                       ))}
                     </BarChart>
@@ -253,8 +262,10 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                         fill="#8884d8"
                         dataKey="value"
                         label={({ name, percent }) => {
-                          // Truncate long names in the label
-                          const displayName = name.length > 10 ? `${name.substring(0, 10)}...` : name;
+                          // Safely format the name
+                          const displayName = typeof name === 'string' 
+                            ? (name.length > 10 ? `${name.substring(0, 10)}...` : name)
+                            : String(name);
                           return `${displayName}: ${(percent * 100).toFixed(0)}%`;
                         }}
                       >
@@ -264,11 +275,21 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                       </Pie>
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }}
-                        formatter={(value, name) => [value, name.length > 15 ? `${name.substring(0, 15)}...` : name]} 
+                        formatter={(value, name) => {
+                          const formattedName = typeof name === 'string'
+                            ? (name.length > 15 ? `${name.substring(0, 15)}...` : name)
+                            : String(name);
+                          return [value, formattedName];
+                        }} 
                       />
                       <Legend 
                         wrapperStyle={{ color: '#a3c2e3', fontSize: '11px' }} 
-                        formatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+                        formatter={(value) => {
+                          if (typeof value === 'string') {
+                            return value.length > 15 ? `${value.substring(0, 15)}...` : value;
+                          }
+                          return String(value);
+                        }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -307,7 +328,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                           dataKey={key} 
                           stackId="a"
                           fill={COLORS[index % COLORS.length]} 
-                          name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
+                          name={formatName(key)}
                         />
                       ))}
                     </BarChart>
