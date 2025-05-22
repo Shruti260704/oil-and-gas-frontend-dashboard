@@ -10,7 +10,7 @@ import { useFiles } from '../context/FileContext';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Database, File, Network, Layers } from "lucide-react";
+import { File, Network, Layers } from "lucide-react";
 import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
@@ -36,14 +36,6 @@ const Dashboard = () => {
     }
   };
   
-  const handleViewGraphs = () => {
-    if (activeFile) {
-      navigate('/graphs', { state: { file: activeFile } });
-    } else {
-      toast.error("Please select a file first");
-    }
-  };
-
   const handleViewMaps = () => {
     if (activeFile) {
       navigate('/maps', { state: { file: activeFile } });
@@ -58,11 +50,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Data Analysis Dashboard</h1>
           <div className="space-x-2">
-            <Button onClick={handleViewGraphs} disabled={!activeFile} className="flex items-center gap-2">
-              <Database size={16} />
-              <span>View Graphs</span>
-            </Button>
-            <Button onClick={handleViewMaps} disabled={!activeFile} className="flex items-center gap-2">
+            <Button onClick={handleViewMaps} disabled={!activeFile} className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800">
               <Network size={16} />
               <span>Interactive Map</span>
             </Button>
@@ -73,7 +61,7 @@ const Dashboard = () => {
           <div className="lg:col-span-3">
             <Card className="shadow-md">
               <div className="p-4 border-b">
-                <h2 className="text-xl font-medium">Upload Files</h2>
+                <h2 className="text-xl font-medium text-foreground">Upload Files</h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Upload your files for analysis
                 </p>
@@ -85,7 +73,7 @@ const Dashboard = () => {
             
             <Card className="mt-6 shadow-md">
               <div className="p-4 border-b">
-                <h2 className="text-xl font-medium">Uploaded Files</h2>
+                <h2 className="text-xl font-medium text-foreground">Uploaded Files</h2>
               </div>
               <div className="p-4">
                 {uploadedFiles.length === 0 ? (
