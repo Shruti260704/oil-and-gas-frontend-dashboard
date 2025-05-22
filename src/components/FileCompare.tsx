@@ -6,7 +6,53 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FileText } from "lucide-react";
 
-const FileCompare = ({ files }: { files: FileData[] }) => {
+interface FileCompareProps {
+  files: FileData[];
+  selectedFiles?: FileData[];
+  onToggleSelection?: (file: FileData) => void;
+}
+
+const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompareProps) => {
+  // If we're in selection mode (onToggleSelection provided), show file selection UI
+  if (onToggleSelection && files.length > 0 && selectedFiles.length < 2) {
+    return (
+      <div>
+        <div className="bg-blue-50 p-4 rounded-lg mb-6 flex items-center">
+          <FileText className="h-5 w-5 mr-3 text-blue-600" />
+          <p className="text-sm">
+            Select two files to compare. {selectedFiles.length === 1 && "You've selected 1 file."}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {files.map(file => (
+            <Card 
+              key={file.id} 
+              className={`cursor-pointer transition-all ${
+                selectedFiles.some(f => f.id === file.id) 
+                  ? 'ring-2 ring-blue-500 shadow-lg' 
+                  : 'hover:shadow-md'
+              }`}
+              onClick={() => onToggleSelection(file)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <FileText className="h-5 w-5" />
+                  <div>
+                    <div className="font-medium">{file.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(file.dateUploaded).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
   if (files.length !== 2) {
     return (
       <div className="text-center py-10">
@@ -106,8 +152,8 @@ const FileCompare = ({ files }: { files: FileData[] }) => {
               </TableRow>
               <TableRow>
                 <TableCell>Upload date</TableCell>
-                <TableCell>{file1.dateUploaded.toLocaleDateString()}</TableCell>
-                <TableCell>{file2.dateUploaded.toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(file1.dateUploaded).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(file2.dateUploaded).toLocaleDateString()}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
