@@ -36,10 +36,10 @@ const MapSection = () => {
         } else if (file.content.data.lat && file.content.data.lng) {
           // Data has parallel arrays for lat/lng values
           const names = Array.isArray(file.content.data.names) ? file.content.data.names : 
-                      Array(file.content.data.lat.length).fill().map((_, i) => `Location ${i+1}`);
+                      Array(file.content.data.lat.length).fill('').map((_, i) => `Location ${i+1}`);
           
           const values = Array.isArray(file.content.data.values) ? file.content.data.values : 
-                        Array(file.content.data.lat.length).fill().map(() => Math.floor(Math.random() * 500) + 100);
+                        Array(file.content.data.lat.length).fill(0).map(() => Math.floor(Math.random() * 500) + 100);
           
           extractedLocations = file.content.data.lat.map((lat: number, index: number) => ({
             name: names[index] || `Location ${index+1}`,

@@ -35,7 +35,8 @@ function SetBoundsToMarkers({ locations }: { locations: LocationData[] }) {
   useEffect(() => {
     if (locations.length > 0) {
       const bounds = locations.map(loc => [loc.lat, loc.lng]);
-      map.fitBounds(bounds as any);
+      // Fix: Pass the bounds array with the correct type annotation
+      map.fitBounds(bounds as [number, number][]);
     }
   }, [locations, map]);
   
