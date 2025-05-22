@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChartBar, ZoomIn, ZoomOut, MapPin } from 'lucide-react';
+import { MapPin, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const GraphViewer = ({ file }: { file: FileData }) => {
@@ -14,29 +14,33 @@ const GraphViewer = ({ file }: { file: FileData }) => {
       id: 'map-1',
       title: `${file.name} - Geographic Distribution`,
       description: 'Shows the geographic distribution of resources across regions',
-      imageUrl: 'https://assets-global.website-files.com/60ff690cd2ae1d7b3dcdcfa2/616f21fcd68e4e72d40d8d8c_create-flowcharts.png',
-      type: 'flowchart'
+      imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b',
+      type: 'geographical',
+      region: 'North America'
     },
     {
       id: 'map-2',
-      title: `${file.name} - Process Workflow`,
-      description: 'Illustrates the end-to-end workflow for the main process',
-      imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKzSJR7nuuLoVqzwfxu_RaZ69p2iPDLxT0fw&usqp=CAU',
-      type: 'process'
+      title: `${file.name} - Mineral Deposits`,
+      description: 'Location of key mineral deposits in the exploration area',
+      imageUrl: 'https://images.unsplash.com/photo-1472396961693-142e6e269027',
+      type: 'geographical',
+      region: 'South America'
     },
     {
       id: 'map-3',
-      title: `${file.name} - Data Relationships`,
-      description: 'Visualizes the relationships between key data entities',
-      imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcYs_tDTr6TDKNvy-KcbI8ti_QoEoZbaV4DQ&usqp=CAU',
-      type: 'relationship'
+      title: `${file.name} - Weather Conditions`,
+      description: 'Current weather patterns affecting operational sites',
+      imageUrl: 'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3',
+      type: 'geographical',
+      region: 'Asia Pacific'
     },
     {
       id: 'map-4',
-      title: `${file.name} - Geographic Map`,
-      description: 'Geographical map showing the location of key resources',
-      imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b',
-      type: 'geographical'
+      title: `${file.name} - Drilling Locations`,
+      description: 'Map showing active and planned drilling locations',
+      imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb',
+      type: 'geographical',
+      region: 'Middle East'
     }
   ];
   
@@ -79,11 +83,7 @@ const GraphViewer = ({ file }: { file: FileData }) => {
           <Card key={map.id} className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
-                {map.type === 'geographical' ? (
-                  <MapPin className="h-5 w-5 text-red-400" />
-                ) : (
-                  <ChartBar className="h-5 w-5 text-primary" />
-                )}
+                <MapPin className="h-5 w-5 text-red-400" />
                 <h3 className="text-lg font-medium text-blue-100">{map.title}</h3>
               </div>
               <p className="text-blue-300 mb-4">{map.description}</p>
@@ -100,21 +100,19 @@ const GraphViewer = ({ file }: { file: FileData }) => {
                   />
                 </div>
               </div>
-              {map.type === 'geographical' && (
-                <div className="mt-4 p-3 bg-blue-900/20 rounded-md border border-blue-800/30">
-                  <p className="text-sm text-blue-200 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-red-400" /> 
-                    This is a geographical map showing locations of key resources.
-                  </p>
-                </div>
-              )}
+              <div className="mt-4 p-3 bg-blue-900/20 rounded-md border border-blue-800/30">
+                <p className="text-sm text-blue-200 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-red-400" /> 
+                  Region: {map.region} - This geographical map shows important resource locations and distribution.
+                </p>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
       
       <div className="bg-blue-950/20 p-4 rounded-lg border border-blue-800/30 text-blue-300 text-sm">
-        <p>Note: These maps are extracted from the uploaded document. Use the zoom controls to adjust the view.</p>
+        <p>Note: These maps are extracted based on geographical data mentioned in the uploaded document. Use the zoom controls to adjust the view.</p>
       </div>
     </div>
   );
