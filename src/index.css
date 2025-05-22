@@ -56,7 +56,7 @@
   }
 }
 
-/* Custom animation */
+/* Custom animations */
 @keyframes float {
   0% {
     transform: translateY(0px);
@@ -69,12 +69,44 @@
   }
 }
 
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
 
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Mind Map Styling */
 .mind-map-node {
-  @apply p-2 bg-primary/10 border border-primary/30 rounded-md shadow-md text-sm backdrop-blur-sm;
+  @apply p-3 bg-primary/10 border border-primary/30 rounded-lg shadow-md text-sm backdrop-blur-sm transition-all hover:bg-primary/20;
 }
 
 .mind-map-node-parent {
@@ -185,4 +217,19 @@
 
 ::-webkit-scrollbar-thumb {
   @apply bg-primary/50 rounded-full hover:bg-primary/70 transition-colors duration-200;
+}
+
+/* File comparison tweaks */
+.file-compare-highlight {
+  @apply bg-primary/20 border-l-4 border-primary transition-all rounded-md;
+}
+
+/* Query section styling */
+.query-input {
+  @apply bg-blue-950/50 border-blue-800/50 text-blue-100 focus:border-primary focus:ring-primary/20;
+}
+
+/* Insight card styling */
+.insight-card {
+  @apply bg-blue-900/30 border border-blue-800/40 backdrop-blur-md p-4 rounded-lg shadow-md hover:shadow-lg hover:shadow-primary/5 transition-all;
 }

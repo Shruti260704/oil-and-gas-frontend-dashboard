@@ -1,15 +1,13 @@
-
 import { useState } from 'react';
 import FileUpload from './FileUpload';
 import MindMap from './MindMap';
-import DataVisualizer from './DataVisualizer';
+import InsightPanel from './InsightPanel';
 import FileCompare from './FileCompare';
-import DataSummary from './DataSummary';
 import { FileData } from '../types/files';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Database, File, LineChart, Network, Layers, BarChart, PieChart, FilePlus } from "lucide-react";
+import { Database, File, Network, Layers, BarChart, FilePlus } from "lucide-react";
 
 const Dashboard = () => {
   const [uploadedFiles, setUploadedFiles] = useState<FileData[]>([]);
@@ -129,10 +127,10 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <Tabs defaultValue="visualize" className="w-full tabs-custom">
-                <TabsList className="grid grid-cols-4 mb-6 tabs-list">
-                  <TabsTrigger value="visualize" className="flex items-center gap-2 text-blue-200">
-                    <BarChart className="h-4 w-4" /> Visualization
+              <Tabs defaultValue="insights" className="w-full tabs-custom">
+                <TabsList className="grid grid-cols-3 mb-6 tabs-list">
+                  <TabsTrigger value="insights" className="flex items-center gap-2 text-blue-200">
+                    <BarChart className="h-4 w-4" /> Insight Panel
                   </TabsTrigger>
                   <TabsTrigger value="mindmap" className="flex items-center gap-2 text-blue-200">
                     <Network className="h-4 w-4" /> Mind Map
@@ -140,19 +138,16 @@ const Dashboard = () => {
                   <TabsTrigger value="compare" className="flex items-center gap-2 text-blue-200">
                     <Layers className="h-4 w-4" /> File Comparison
                   </TabsTrigger>
-                  <TabsTrigger value="summary" className="flex items-center gap-2 text-blue-200">
-                    <PieChart className="h-4 w-4" /> Data Summary
-                  </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="visualize">
+                <TabsContent value="insights">
                   <Card className="p-6 shadow-lg card-hover card-gradient">
                     <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
                       <BarChart className="h-5 w-5 text-primary" />
-                      <h2 className="text-xl font-semibold text-blue-100">Data Visualization</h2>
+                      <h2 className="text-xl font-semibold text-blue-100">Insight Panel</h2>
                     </div>
                     <div className="viz-bg">
-                      {activeFile && <DataVisualizer file={activeFile} />}
+                      {activeFile && <InsightPanel file={activeFile} />}
                     </div>
                   </Card>
                 </TabsContent>
@@ -185,18 +180,6 @@ const Dashboard = () => {
                           <p className="text-sm text-primary font-bold">Currently selected: {selectedFiles.length}/2</p>
                         </div>
                       )}
-                    </div>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="summary">
-                  <Card className="p-6 shadow-lg card-hover card-gradient">
-                    <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
-                      <PieChart className="h-5 w-5 text-primary" />
-                      <h2 className="text-xl font-semibold text-blue-100">Data Summary</h2>
-                    </div>
-                    <div className="viz-bg">
-                      {activeFile && <DataSummary file={activeFile} />}
                     </div>
                   </Card>
                 </TabsContent>
