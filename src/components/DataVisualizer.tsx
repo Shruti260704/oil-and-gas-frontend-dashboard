@@ -98,17 +98,17 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={lineData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="index" 
                       tick={{ fontSize: 12 }}
-                      height={40}
+                      height={60}
                       angle={-45}
                       textAnchor="end"
                     />
-                    <YAxis tick={{ fontSize: 12 }} width={50} />
+                    <YAxis tick={{ fontSize: 12 }} width={60} />
                     <Tooltip />
                     <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
@@ -138,17 +138,17 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={barData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="index" 
                       tick={{ fontSize: 12 }}
-                      height={40}
+                      height={60}
                       angle={-45}
                       textAnchor="end"
                     />
-                    <YAxis tick={{ fontSize: 12 }} width={50} />
+                    <YAxis tick={{ fontSize: 12 }} width={60} />
                     <Tooltip />
                     <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
@@ -184,7 +184,6 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                       fill="#8884d8"
                       dataKey="value"
                       label={({ name, percent }) => {
-                        // Safely format the name
                         const displayName = typeof name === 'string' 
                           ? (name.length > 10 ? `${name.substring(0, 10)}...` : name)
                           : String(name);
@@ -227,17 +226,17 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={barData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="index" 
                       tick={{ fontSize: 12 }}
-                      height={40}
+                      height={60}
                       angle={-45}
                       textAnchor="end"
                     />
-                    <YAxis tick={{ fontSize: 12 }} width={50} />
+                    <YAxis tick={{ fontSize: 12 }} width={60} />
                     <Tooltip />
                     <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
@@ -110,8 +109,6 @@ const InsightPanel = ({ file }: { file: FileData }) => {
     }).filter(Boolean);
   };
   
-  const dataMetrics = getDataMetrics();
-  
   // Generate a type-specific summary based on file type
   const getTypeSummary = () => {
     switch (file.type) {
@@ -174,18 +171,18 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={lineData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5c" />
                       <XAxis 
                         dataKey="index" 
                         stroke="#8fadc8" 
                         tick={{ fontSize: 11 }}
-                        height={40}
+                        height={60}
                         angle={-45}
                         textAnchor="end"
                       />
-                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={50} />
+                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={60} />
                       <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
                       <Legend wrapperStyle={{ color: '#a3c2e3', paddingTop: 10, fontSize: '11px' }} />
                       {dataKeys.map((key, index) => (
@@ -215,18 +212,18 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={barData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5c" />
                       <XAxis 
                         dataKey="index" 
                         stroke="#8fadc8" 
                         tick={{ fontSize: 11 }}
-                        height={40}
+                        height={60}
                         angle={-45}
                         textAnchor="end"
                       />
-                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={50} />
+                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={60} />
                       <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
                       <Legend wrapperStyle={{ color: '#a3c2e3', paddingTop: 10, fontSize: '11px' }} />
                       {dataKeys.map((key, index) => (
@@ -308,18 +305,18 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={barData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5c" />
                       <XAxis 
                         dataKey="index" 
                         stroke="#8fadc8" 
                         tick={{ fontSize: 11 }}
-                        height={40}
+                        height={60}
                         angle={-45}
                         textAnchor="end"
                       />
-                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={50} />
+                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={60} />
                       <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
                       <Legend wrapperStyle={{ color: '#a3c2e3', paddingTop: 10, fontSize: '11px' }} />
                       {dataKeys.map((key, index) => (
