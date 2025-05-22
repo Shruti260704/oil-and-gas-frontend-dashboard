@@ -389,7 +389,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             </div>
             
             {/* Data Metrics Table */}
-            {dataMetrics.length > 0 && (
+            {getDataMetrics().length > 0 && (
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-blue-300 mb-3">Data Metrics Summary</h4>
                 <div className="bg-blue-900/30 rounded-lg border border-blue-800/30 overflow-x-auto">
@@ -404,7 +404,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dataMetrics.map((item: any, index) => (
+                      {getDataMetrics().map((item: any, index) => (
                         <TableRow key={index} className="border-blue-800/30">
                           <TableCell className="font-medium capitalize text-blue-100 max-w-[150px]">
                             <span className="truncate block" title={item.metric}>{item.metric}</span>
