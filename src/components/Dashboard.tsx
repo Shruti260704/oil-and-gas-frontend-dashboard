@@ -1,4 +1,6 @@
+
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FileUpload from './FileUpload';
 import MindMap from './MindMap';
 import InsightPanel from './InsightPanel';
@@ -7,9 +9,11 @@ import { FileData } from '../types/files';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Database, File, Network, Layers, BarChart, FilePlus } from "lucide-react";
+import { Database, File, Network, Layers, BarChart, FilePlus, Graph } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [uploadedFiles, setUploadedFiles] = useState<FileData[]>([]);
   const [activeFile, setActiveFile] = useState<FileData | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<FileData[]>([]);
@@ -42,6 +46,14 @@ const Dashboard = () => {
         // Remove if already selected
         setSelectedFiles(selectedFiles.filter(f => f.id !== file.id));
       }
+    }
+  };
+  
+  const handleViewGraphs = () => {
+    if (activeFile) {
+      navigate('/graphs', { state: { file: activeFile } });
+    } else {
+      toast.error("Please select a file first");
     }
   };
 
@@ -128,7 +140,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <Tabs defaultValue="insights" className="w-full tabs-custom">
-                <TabsList className="grid grid-cols-3 mb-6 tabs-list">
+                <TabsList className="grid grid-cols-4 mb-6 tabs-list">
                   <TabsTrigger value="insights" className="flex items-center gap-2 text-blue-200">
                     <BarChart className="h-4 w-4" /> Insight Panel
                   </TabsTrigger>
@@ -137,6 +149,9 @@ const Dashboard = () => {
                   </TabsTrigger>
                   <TabsTrigger value="compare" className="flex items-center gap-2 text-blue-200">
                     <Layers className="h-4 w-4" /> File Comparison
+                  </TabsTrigger>
+                  <TabsTrigger value="graphs" className="flex items-center gap-2 text-blue-200">
+                    <Graph className="h-4 w-4" /> Graph Section
                   </TabsTrigger>
                 </TabsList>
                 
@@ -178,6 +193,49 @@ const Dashboard = () => {
                           <Layers className="h-16 w-16 text-blue-500/60 mx-auto mb-4" />
                           <p className="text-blue-200 font-medium mb-2">Select two files to compare from the file list</p>
                           <p className="text-sm text-primary font-bold">Currently selected: {selectedFiles.length}/2</p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="graphs">
+                  <Card className="p-6 shadow-lg card-hover card-gradient">
+                    <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
+                      <Graph className="h-5 w-5 text-primary" />
+                      <h2 className="text-xl font-semibold text-blue-100">Graph Section</h2>
+                    </div>
+                    <div className="viz-bg">
+                      {activeFile ? (
+                        <div className="space-y-6">
+                          <p className="text-blue-300">
+                            View all maps and graphs extracted from {activeFile.name}
+                          </p>
+                          <div className="text-center">
+                            <Button onClick={handleViewGraphs} className="px-8">
+                              <Graph className="h-4 w-4 mr-2" /> View Full Graph Section
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 mt-6">
+                            {/* Preview images */}
+                            <div className="bg-blue-950/40 border border-blue-800/30 p-4 rounded-lg">
+                              <h4 className="text-blue-200 mb-2">Geographic Distribution</h4>
+                              <div className="aspect-video bg-blue-900/30 flex items-center justify-center rounded-md">
+                                <Graph className="h-10 w-10 text-blue-500/50" />
+                              </div>
+                            </div>
+                            <div className="bg-blue-950/40 border border-blue-800/30 p-4 rounded-lg">
+                              <h4 className="text-blue-200 mb-2">Process Workflow</h4>
+                              <div className="aspect-video bg-blue-900/30 flex items-center justify-center rounded-md">
+                                <Graph className="h-10 w-10 text-blue-500/50" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 bg-blue-950/50 rounded-lg border border-blue-900/30 backdrop-blur-sm">
+                          <Graph className="h-16 w-16 text-blue-500/60 mx-auto mb-4" />
+                          <p className="text-blue-200 font-medium mb-2">Select a file to view its graphs</p>
                         </div>
                       )}
                     </div>

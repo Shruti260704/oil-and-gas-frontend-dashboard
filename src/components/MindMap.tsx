@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FileData } from '../types/files';
 import { Network, X, ZoomIn, ZoomOut, Move } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ const MindMap = ({ file }: { file: FileData }) => {
   const [nodes, setNodes] = useState<MindMapNode[]>([]);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
+  const mapRef = useRef<HTMLDivElement>(null);
   
   // Generate mind map nodes based on file topics with hierarchical structure
   useEffect(() => {
@@ -111,14 +112,7 @@ const MindMap = ({ file }: { file: FileData }) => {
     setZoomLevel(prev => Math.max(prev - 0.2, 0.6));
   };
   
-  const renderNode = (node: MindMapNode) => {
-    // Style based on node level
-    const nodeClasses = {
-      0: "bg-primary text-white font-medium mind-map-node-parent", // Root node
-      1: "bg-blue-800/50 border-blue-600/50 text-blue-50", // Section node
-      2: "bg-blue-900/30 border-blue-700/30 text-blue-100" // Subtopic node
-    };
-    
+  const getNodePosition = (node: MindMapNode) => {
     // Calculate position based on level and hierarchy
     let x = 0, y = 0;
     
@@ -147,9 +141,25 @@ const MindMap = ({ file }: { file: FileData }) => {
       }
     }
     
+    return { x, y };
+  };
+  
+  const renderNode = (node: MindMapNode) => {
+    // Style based on node level
+    const nodeClasses = {
+      0: "bg-primary text-white font-medium mind-map-node-parent", // Root node
+      1: "bg-blue-800/50 border-blue-600/50 text-blue-50", // Section node
+      2: "bg-blue-900/30 border-blue-700/30 text-blue-100" // Subtopic node
+    };
+    
+    // Get position and apply map position offset
+    const { x, y } = getNodePosition(node);
+    const posX = x + mapPosition.x;
+    const posY = y + mapPosition.y;
+    
     const nodeStyle = {
-      left: `${x + mapPosition.x}px`,
-      top: `${y + mapPosition.y}px`,
+      left: `${posX}px`,
+      top: `${posY}px`,
       transform: `scale(${zoomLevel})`,
       transformOrigin: 'center',
       zIndex: 10 - node.level, // Higher z-index for more important nodes
@@ -162,6 +172,7 @@ const MindMap = ({ file }: { file: FileData }) => {
         className={`absolute rounded-lg p-3 shadow-lg cursor-pointer transition-all hover:shadow-primary/30 hover:scale-105 mind-map-node ${nodeClasses[node.level as keyof typeof nodeClasses]}`}
         style={nodeStyle}
         onClick={() => handleNodeClick(node)}
+        data-node-id={node.id}
       >
         {node.label}
       </div>
@@ -177,45 +188,25 @@ const MindMap = ({ file }: { file: FileData }) => {
         
         if (!parent) return null;
         
-        // Calculate positions of parent and child for drawing lines
-        let parentX = 0, parentY = 0, childX = 0, childY = 0;
+        // Get node positions and add offsets for connections
+        const childPos = getNodePosition(child);
+        const parentPos = getNodePosition(parent);
         
-        // Parent position
+        // Calculate connection points based on node level
+        let parentX, parentY, childX, childY;
+        
+        // Parent connection point (right side or center-bottom based on level)
         if (parent.level === 0) {
-          parentX = 150 + 90; // center of node
-          parentY = 250 + 20; // center of node
-        } else if (parent.level === 1) {
-          const sectionCount = nodes.filter(n => n.level === 1).length;
-          const sectionIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === parent.id);
-          parentX = 350 + 80; // center of node
-          parentY = 100 + (sectionIndex * (400 / Math.max(sectionCount, 1))) + 20; // center of node
+          parentX = parentPos.x + 90 + mapPosition.x; // right side of node
+          parentY = parentPos.y + 20 + mapPosition.y; // center of node
+        } else {
+          parentX = parentPos.x + 80 + mapPosition.x; // right side of node
+          parentY = parentPos.y + 20 + mapPosition.y; // center of node
         }
         
-        // Child position
-        if (child.level === 1) {
-          const sectionCount = nodes.filter(n => n.level === 1).length;
-          const sectionIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === child.id);
-          childX = 350; // left edge of node
-          childY = 100 + (sectionIndex * (400 / Math.max(sectionCount, 1))) + 20; // center of node
-        } else if (child.level === 2) {
-          const parentNode = nodes.find(n => n.id === child.parent);
-          if (parentNode) {
-            const siblingCount = nodes.filter(n => n.parent === parentNode.id).length;
-            const siblingIndex = nodes.filter(n => n.parent === parentNode.id).findIndex(n => n.id === child.id);
-            
-            const parentIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === parentNode.id);
-            
-            childX = 550; // left edge of node
-            childY = 50 + (parentIndex * (400 / Math.max(nodes.filter(n => n.level === 1).length, 1))) + 
-                ((siblingIndex + 0.5) * (300 / Math.max(siblingCount, 1))) + 20; // center of node
-          }
-        }
-        
-        // Add position offset for panning
-        parentX += mapPosition.x;
-        parentY += mapPosition.y;
-        childX += mapPosition.x;
-        childY += mapPosition.y;
+        // Child connection point (left side)
+        childX = childPos.x + mapPosition.x; // left edge of node
+        childY = childPos.y + 20 + mapPosition.y; // center of node
         
         // Draw SVG line between nodes
         return (
@@ -326,7 +317,10 @@ const MindMap = ({ file }: { file: FileData }) => {
         </div>
         
         {/* Mind Map Visualization */}
-        <div className="relative h-[500px] w-full overflow-hidden bg-blue-950/40 rounded-lg p-4 backdrop-blur-sm border border-blue-900/30">
+        <div 
+          ref={mapRef} 
+          className="relative h-[500px] w-full overflow-hidden bg-blue-950/40 rounded-lg p-4 backdrop-blur-sm border border-blue-900/30"
+        >
           {/* Render connections between nodes */}
           {renderConnections()}
           
@@ -426,19 +420,6 @@ const MindMap = ({ file }: { file: FileData }) => {
               <div className="w-3 h-3 bg-blue-900/30 border border-blue-700/30 rounded-full mr-2"></div>
               <span className="text-blue-200">Related Concepts</span>
             </div>
-          </div>
-          
-          {/* Structure illustration */}
-          <div className="absolute top-3 left-3 bg-blue-950/70 p-3 rounded-lg shadow-md text-xs backdrop-blur-md border border-blue-800/40 max-w-[180px]">
-            <div className="text-blue-200 mb-1">Document Structure</div>
-            <pre className="text-blue-300 text-[9px] leading-tight">
-{`Main Topic
-├── Section 1
-│   ├── Subtopic A
-│   ├── Subtopic B
-├── Section 2
-│   ├── Subtopic C`}
-            </pre>
           </div>
         </div>
         
