@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FileData } from '../types/files';
-import { ChartBar } from 'lucide-react';
+import { ChartBar, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import GraphViewer from '../components/GraphViewer';
@@ -26,7 +26,12 @@ const GraphSection = () => {
   return (
     <div className="container mx-auto p-4 max-w-[1600px]">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-blue-100">Maps & Graphs</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-blue-100">Maps & Graphs</h1>
+          <div className="bg-blue-900/30 px-2 py-1 rounded-md text-xs text-blue-300 flex items-center gap-1">
+            <MapPin className="h-3 w-3" /> Geographical maps included
+          </div>
+        </div>
         <Button onClick={handleBackToDashboard}>
           Back to Dashboard
         </Button>
