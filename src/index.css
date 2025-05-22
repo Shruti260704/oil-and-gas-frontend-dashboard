@@ -109,6 +109,7 @@
   @apply p-3 bg-primary/10 border border-primary/30 rounded-lg shadow-md text-sm backdrop-blur-sm transition-all hover:bg-primary/20;
   min-width: 120px;
   overflow: hidden;
+  max-width: 180px; /* Add max width to prevent overflow */
 }
 
 .mind-map-node-parent {
@@ -278,4 +279,46 @@
 /* Blue/black background text color adjustments */
 .bg-blue-900, .bg-blue-800, .bg-blue-950, .bg-black, .bg-gray-900 {
   @apply text-white;
+}
+
+/* New classes for improved data visualization text handling */
+.chart-tooltip {
+  @apply p-2 bg-blue-950/90 border border-blue-700/50 shadow-lg text-blue-100 text-xs;
+  max-width: 220px;
+}
+
+.chart-title {
+  @apply truncate font-medium;
+  max-width: 100%;
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.chart-legend-item {
+  @apply flex items-center gap-1.5 text-xs;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+/* Adds spacing between axis ticks to prevent overlap */
+.recharts-cartesian-axis-tick {
+  font-size: 11px;
+}
+
+/* Ensure proper table cell text handling */
+.table-cell-content {
+  @apply truncate block;
+  max-width: 100%;
+}
+
+/* Improved badge text handling */
+.text-badge {
+  @apply inline-block text-xs whitespace-normal text-left;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }

@@ -119,7 +119,7 @@ const MapSection = () => {
                 {currentFile ? (
                   <div className="bg-blue-900/70 p-4 rounded-lg mb-4 border border-blue-700/50">
                     <h3 className="font-medium text-blue-100 mb-1">Current File</h3>
-                    <p className="text-white text-sm truncate">{currentFile.name}</p>
+                    <p className="text-white text-sm truncate" title={currentFile.name}>{currentFile.name}</p>
                   </div>
                 ) : (
                   <div className="bg-blue-900/70 p-4 rounded-lg mb-4 border border-blue-700/50 text-center">
@@ -154,12 +154,12 @@ const MapSection = () => {
                       {locations.map((location, index) => (
                         <li 
                           key={index}
-                          className="p-3 bg-blue-800/50 rounded-lg border border-blue-700/40 text-sm hover:bg-blue-800/80 transition-colors location-item"
+                          className="p-3 bg-blue-800/50 rounded-lg border border-blue-700/40 text-sm hover:bg-blue-800/80 transition-colors"
                         >
-                          <div className="font-medium text-white truncate">{location.name}</div>
-                          <div className="text-blue-200 text-xs mt-2 flex justify-between items-center flex-wrap gap-1">
-                            <span className="truncate max-w-full">{location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
-                            <span className="bg-blue-700/60 px-2 py-0.5 rounded-full whitespace-nowrap">Value: {location.value}</span>
+                          <div className="font-medium text-white truncate" title={location.name}>{location.name}</div>
+                          <div className="text-blue-200 text-xs mt-2 flex justify-between items-center gap-1">
+                            <span className="truncate">{location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
+                            <span className="bg-blue-700/60 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">Value: {location.value}</span>
                           </div>
                         </li>
                       ))}

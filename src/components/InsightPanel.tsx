@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
@@ -159,20 +158,27 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             <Card className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md">
               <CardContent className="p-4">
                 <div className="flex items-center mb-4">
-                  <ChartLine className="h-5 w-5 mr-2 text-blue-400" />
-                  <h3 className="font-medium text-blue-200">Trend Analysis</h3>
+                  <ChartLine className="h-5 w-5 mr-2 text-blue-400 flex-shrink-0" />
+                  <h3 className="font-medium text-blue-200 truncate">Trend Analysis</h3>
                 </div>
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={lineData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5c" />
-                      <XAxis dataKey="index" stroke="#8fadc8" />
-                      <YAxis stroke="#8fadc8" />
+                      <XAxis 
+                        dataKey="index" 
+                        stroke="#8fadc8" 
+                        tick={{ fontSize: 11 }}
+                        height={40}
+                        angle={-45}
+                        textAnchor="end"
+                      />
+                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={50} />
                       <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
-                      <Legend wrapperStyle={{ color: '#a3c2e3' }} />
+                      <Legend wrapperStyle={{ color: '#a3c2e3', paddingTop: 10, fontSize: '11px' }} />
                       {dataKeys.map((key, index) => (
                         <Line 
                           key={key}
@@ -180,6 +186,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                           dataKey={key} 
                           stroke={COLORS[index % COLORS.length]} 
                           activeDot={{ r: 8 }}
+                          name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
                         />
                       ))}
                     </LineChart>
@@ -192,25 +199,33 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             <Card className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md">
               <CardContent className="p-4">
                 <div className="flex items-center mb-4">
-                  <ChartBar className="h-5 w-5 mr-2 text-green-400" />
-                  <h3 className="font-medium text-blue-200">Comparative Analysis</h3>
+                  <ChartBar className="h-5 w-5 mr-2 text-green-400 flex-shrink-0" />
+                  <h3 className="font-medium text-blue-200 truncate">Comparative Analysis</h3>
                 </div>
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={barData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5c" />
-                      <XAxis dataKey="index" stroke="#8fadc8" />
-                      <YAxis stroke="#8fadc8" />
+                      <XAxis 
+                        dataKey="index" 
+                        stroke="#8fadc8" 
+                        tick={{ fontSize: 11 }}
+                        height={40}
+                        angle={-45}
+                        textAnchor="end"
+                      />
+                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={50} />
                       <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
-                      <Legend wrapperStyle={{ color: '#a3c2e3' }} />
+                      <Legend wrapperStyle={{ color: '#a3c2e3', paddingTop: 10, fontSize: '11px' }} />
                       {dataKeys.map((key, index) => (
                         <Bar 
                           key={key} 
                           dataKey={key} 
                           fill={COLORS[index % COLORS.length]} 
+                          name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
                         />
                       ))}
                     </BarChart>
@@ -223,8 +238,8 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             <Card className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md">
               <CardContent className="p-4">
                 <div className="flex items-center mb-4">
-                  <ChartPie className="h-5 w-5 mr-2 text-purple-400" />
-                  <h3 className="font-medium text-blue-200">Distribution Analysis</h3>
+                  <ChartPie className="h-5 w-5 mr-2 text-purple-400 flex-shrink-0" />
+                  <h3 className="font-medium text-blue-200 truncate">Distribution Analysis</h3>
                 </div>
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -237,14 +252,24 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => {
+                          // Truncate long names in the label
+                          const displayName = name.length > 10 ? `${name.substring(0, 10)}...` : name;
+                          return `${displayName}: ${(percent * 100).toFixed(0)}%`;
+                        }}
                       >
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
-                      <Legend wrapperStyle={{ color: '#a3c2e3' }} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }}
+                        formatter={(value, name) => [value, name.length > 15 ? `${name.substring(0, 15)}...` : name]} 
+                      />
+                      <Legend 
+                        wrapperStyle={{ color: '#a3c2e3', fontSize: '11px' }} 
+                        formatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -255,26 +280,34 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             <Card className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md">
               <CardContent className="p-4">
                 <div className="flex items-center mb-4">
-                  <ChartColumn className="h-5 w-5 mr-2 text-orange-400" />
-                  <h3 className="font-medium text-blue-200">Stacked Metric Analysis</h3>
+                  <ChartColumn className="h-5 w-5 mr-2 text-orange-400 flex-shrink-0" />
+                  <h3 className="font-medium text-blue-200 truncate">Stacked Metric Analysis</h3>
                 </div>
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={barData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5c" />
-                      <XAxis dataKey="index" stroke="#8fadc8" />
-                      <YAxis stroke="#8fadc8" />
+                      <XAxis 
+                        dataKey="index" 
+                        stroke="#8fadc8" 
+                        tick={{ fontSize: 11 }}
+                        height={40}
+                        angle={-45}
+                        textAnchor="end"
+                      />
+                      <YAxis stroke="#8fadc8" tick={{ fontSize: 11 }} width={50} />
                       <Tooltip contentStyle={{ backgroundColor: '#162a46', border: '1px solid #234876', color: '#a3c2e3' }} />
-                      <Legend wrapperStyle={{ color: '#a3c2e3' }} />
+                      <Legend wrapperStyle={{ color: '#a3c2e3', paddingTop: 10, fontSize: '11px' }} />
                       {dataKeys.map((key, index) => (
                         <Bar 
                           key={key} 
                           dataKey={key} 
                           stackId="a"
                           fill={COLORS[index % COLORS.length]} 
+                          name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
                         />
                       ))}
                     </BarChart>
@@ -292,14 +325,14 @@ const InsightPanel = ({ file }: { file: FileData }) => {
         <Card className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md">
           <CardContent className="p-6">
             <div className="flex items-center mb-4">
-              <FileText className="h-5 w-5 mr-2 text-blue-400" />
-              <h3 className="font-medium text-blue-200">File Overview</h3>
+              <FileText className="h-5 w-5 mr-2 text-blue-400 flex-shrink-0" />
+              <h3 className="font-medium text-blue-200 truncate">File Overview</h3>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-800/40">
                 <h4 className="text-sm font-medium text-blue-300 mb-2">File Name</h4>
-                <p className="text-blue-100">{file.name}</p>
+                <p className="text-blue-100 truncate" title={file.name}>{file.name}</p>
               </div>
               <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-800/40">
                 <h4 className="text-sm font-medium text-blue-300 mb-2">File Type</h4>
@@ -312,13 +345,13 @@ const InsightPanel = ({ file }: { file: FileData }) => {
               </div>
               <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-800/40">
                 <h4 className="text-sm font-medium text-blue-300 mb-2">Uploaded On</h4>
-                <p className="text-blue-100">{file.dateUploaded.toLocaleString()}</p>
+                <p className="text-blue-100 truncate">{file.dateUploaded.toLocaleString()}</p>
               </div>
             </div>
             
             <div className="mb-6">
               <h4 className="text-sm font-medium text-blue-300 mb-2">Document Summary</h4>
-              <p className="text-blue-100 bg-blue-900/20 p-4 rounded-lg border border-blue-800/30">{content.summary}</p>
+              <p className="text-blue-100 bg-blue-900/20 p-4 rounded-lg border border-blue-800/30 break-words overflow-hidden">{content.summary}</p>
             </div>
             
             <div className="mb-6">
@@ -330,7 +363,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
               <h4 className="text-sm font-medium text-blue-300 mb-2">Key Topics</h4>
               <div className="flex flex-wrap gap-2">
                 {content.topics.map((topic, index) => (
-                  <Badge key={index} variant="secondary" className="bg-primary/20 text-blue-100 hover:bg-primary/30">
+                  <Badge key={index} variant="secondary" className="bg-primary/20 text-blue-100 hover:bg-primary/30 whitespace-normal text-left">
                     {topic}
                   </Badge>
                 ))}
@@ -341,7 +374,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             {dataMetrics.length > 0 && (
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-blue-300 mb-3">Data Metrics Summary</h4>
-                <div className="bg-blue-900/30 rounded-lg border border-blue-800/30 overflow-hidden">
+                <div className="bg-blue-900/30 rounded-lg border border-blue-800/30 overflow-x-auto">
                   <Table>
                     <TableHeader className="bg-blue-900/50">
                       <TableRow>
@@ -355,8 +388,8 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                     <TableBody>
                       {dataMetrics.map((item: any, index) => (
                         <TableRow key={index} className="border-blue-800/30">
-                          <TableCell className="font-medium capitalize text-blue-100">
-                            {item.metric}
+                          <TableCell className="font-medium capitalize text-blue-100 max-w-[150px]">
+                            <span className="truncate block" title={item.metric}>{item.metric}</span>
                           </TableCell>
                           <TableCell className="text-blue-100">{item.stats.min}</TableCell>
                           <TableCell className="text-blue-100">{item.stats.max}</TableCell>
@@ -383,8 +416,8 @@ const InsightPanel = ({ file }: { file: FileData }) => {
             {/* Document Query Section */}
             <div className="mt-10 pt-6 border-t border-blue-800/40">
               <div className="flex items-center mb-4">
-                <MessageSquare className="h-5 w-5 mr-2 text-primary" />
-                <h3 className="font-medium text-blue-200">Ask About This Document</h3>
+                <MessageSquare className="h-5 w-5 mr-2 text-primary flex-shrink-0" />
+                <h3 className="font-medium text-blue-200 truncate">Ask About This Document</h3>
               </div>
               
               <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-800/40">
@@ -412,7 +445,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                   
                   {queryResponse && (
                     <div className="mt-4 bg-blue-900/40 p-4 rounded-lg border border-blue-700/40 animate-fade-in">
-                      <p className="text-blue-100">{queryResponse}</p>
+                      <p className="text-blue-100 break-words">{queryResponse}</p>
                     </div>
                   )}
                 </form>

@@ -71,7 +71,7 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
   
   return (
     <div>
-      <p className="text-gray-600 mb-6">{summary}</p>
+      <p className="text-gray-600 mb-6 break-words">{summary}</p>
       
       {dataKeys.length === 0 ? (
         <div className="text-center py-10">
@@ -83,20 +83,26 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center mb-4">
-                <ChartLine className="h-5 w-5 mr-2 text-blue-600" />
-                <h3 className="font-medium">Trend Analysis</h3>
+                <ChartLine className="h-5 w-5 mr-2 text-blue-600 flex-shrink-0" />
+                <h3 className="font-medium truncate">Trend Analysis</h3>
               </div>
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={lineData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="index" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="index" 
+                      tick={{ fontSize: 12 }}
+                      height={40}
+                      angle={-45}
+                      textAnchor="end"
+                    />
+                    <YAxis tick={{ fontSize: 12 }} width={50} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
                       <Line 
                         key={key}
@@ -104,6 +110,7 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         dataKey={key} 
                         stroke={COLORS[index % COLORS.length]} 
                         activeDot={{ r: 8 }}
+                        name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
                       />
                     ))}
                   </LineChart>
@@ -116,25 +123,32 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center mb-4">
-                <ChartBar className="h-5 w-5 mr-2 text-green-600" />
-                <h3 className="font-medium">Comparative Analysis</h3>
+                <ChartBar className="h-5 w-5 mr-2 text-green-600 flex-shrink-0" />
+                <h3 className="font-medium truncate">Comparative Analysis</h3>
               </div>
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={barData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="index" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="index" 
+                      tick={{ fontSize: 12 }}
+                      height={40}
+                      angle={-45}
+                      textAnchor="end"
+                    />
+                    <YAxis tick={{ fontSize: 12 }} width={50} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
                       <Bar 
                         key={key} 
                         dataKey={key} 
                         fill={COLORS[index % COLORS.length]} 
+                        name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
                       />
                     ))}
                   </BarChart>
@@ -147,8 +161,8 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center mb-4">
-                <ChartPie className="h-5 w-5 mr-2 text-purple-600" />
-                <h3 className="font-medium">Distribution Analysis</h3>
+                <ChartPie className="h-5 w-5 mr-2 text-purple-600 flex-shrink-0" />
+                <h3 className="font-medium truncate">Distribution Analysis</h3>
               </div>
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -161,14 +175,21 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => {
+                        // Truncate long names in the label
+                        const displayName = name.length > 10 ? `${name.substring(0, 10)}...` : name;
+                        return `${displayName}: ${(percent * 100).toFixed(0)}%`;
+                      }}
                     >
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend />
+                    <Tooltip formatter={(value, name) => [value, name.length > 15 ? `${name.substring(0, 15)}...` : name]} />
+                    <Legend 
+                      formatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+                      wrapperStyle={{ fontSize: '12px' }} 
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -179,26 +200,33 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center mb-4">
-                <ChartColumn className="h-5 w-5 mr-2 text-orange-500" />
-                <h3 className="font-medium">Stacked Metric Analysis</h3>
+                <ChartColumn className="h-5 w-5 mr-2 text-orange-500 flex-shrink-0" />
+                <h3 className="font-medium truncate">Stacked Metric Analysis</h3>
               </div>
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={barData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="index" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="index" 
+                      tick={{ fontSize: 12 }}
+                      height={40}
+                      angle={-45}
+                      textAnchor="end"
+                    />
+                    <YAxis tick={{ fontSize: 12 }} width={50} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
                       <Bar 
                         key={key} 
                         dataKey={key} 
                         stackId="a"
                         fill={COLORS[index % COLORS.length]} 
+                        name={key.length > 12 ? `${key.substring(0, 12)}...` : key}
                       />
                     ))}
                   </BarChart>
