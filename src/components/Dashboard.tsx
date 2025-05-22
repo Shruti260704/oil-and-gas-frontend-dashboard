@@ -8,7 +8,7 @@ import { FileData } from '../types/files';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Database, File, Network, Layers, MapPin, FilePlus } from "lucide-react";
+import { Database, File, Network, Layers, MapPin, FilePlus, Navigation } from "lucide-react";
 import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
@@ -54,6 +54,10 @@ const Dashboard = () => {
     } else {
       toast.error("Please select a file first");
     }
+  };
+
+  const handleViewMaps = () => {
+    navigate('/maps');
   };
 
   return (
@@ -139,7 +143,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <Tabs defaultValue="insights" className="w-full tabs-custom">
-                <TabsList className="grid grid-cols-4 mb-6 tabs-list">
+                <TabsList className="grid grid-cols-5 mb-6 tabs-list">
                   <TabsTrigger value="insights" className="flex items-center gap-2 text-blue-200">
                     <Database className="h-4 w-4" /> Insight Panel
                   </TabsTrigger>
@@ -151,6 +155,9 @@ const Dashboard = () => {
                   </TabsTrigger>
                   <TabsTrigger value="maps" className="flex items-center gap-2 text-blue-200">
                     <MapPin className="h-4 w-4" /> Maps
+                  </TabsTrigger>
+                  <TabsTrigger value="geomap" className="flex items-center gap-2 text-blue-200">
+                    <Navigation className="h-4 w-4" /> Interactive Map
                   </TabsTrigger>
                 </TabsList>
                 
@@ -249,6 +256,38 @@ const Dashboard = () => {
                           <p className="text-blue-200 font-medium mb-2">Select a file to view extracted maps</p>
                         </div>
                       )}
+                    </div>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="geomap">
+                  <Card className="p-6 shadow-lg card-hover card-gradient">
+                    <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
+                      <Navigation className="h-5 w-5 text-primary" />
+                      <h2 className="text-xl font-semibold text-blue-100">Interactive Map</h2>
+                    </div>
+                    <div className="viz-bg">
+                      <div className="space-y-6">
+                        <p className="text-blue-300">
+                          Visualize location data with our interactive map tool
+                        </p>
+                        <div className="text-center">
+                          <Button onClick={handleViewMaps} className="px-8">
+                            <Navigation className="h-4 w-4 mr-2" /> Go to Interactive Map
+                          </Button>
+                        </div>
+                        <div className="aspect-video bg-blue-900/20 rounded-lg overflow-hidden relative mt-6">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                              <Navigation className="h-12 w-12 text-primary/60 mx-auto mb-4" />
+                              <p className="text-blue-200 font-medium">Interactive Map Visualization</p>
+                              <p className="text-sm text-blue-300 mt-2">
+                                Plot location data, visualize patterns, and explore geographic information
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </Card>
                 </TabsContent>
