@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
-import { Graph, ZoomIn, ZoomOut } from 'lucide-react';
+import { ChartBar, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const GraphViewer = ({ file }: { file: FileData }) => {

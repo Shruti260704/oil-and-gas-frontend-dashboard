@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FileData } from '../types/files';
-import { Graph } from 'lucide-react';
+import { ChartBar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import GraphViewer from '../components/GraphViewer';
@@ -35,7 +35,7 @@ const GraphSection = () => {
       {file ? (
         <Card className="p-6 shadow-lg card-hover card-gradient">
           <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
-            <Graph className="h-5 w-5 text-primary" />
+            <ChartBar className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold text-blue-100">Maps from {file.name}</h2>
           </div>
           <div className="viz-bg">
@@ -46,7 +46,7 @@ const GraphSection = () => {
         <div className="flex flex-col items-center justify-center h-[500px] empty-state border-blue-800/40">
           <div className="text-center animate-float">
             <div className="bg-primary/10 p-6 rounded-full mx-auto mb-8 backdrop-blur-sm border border-primary/20">
-              <Graph className="mx-auto h-16 w-16 text-primary" />
+              <ChartBar className="mx-auto h-16 w-16 text-primary" />
             </div>
             <h3 className="text-2xl font-bold text-blue-100 mb-3">No File Selected</h3>
             <p className="mt-2 text-blue-300 max-w-sm mx-auto">
