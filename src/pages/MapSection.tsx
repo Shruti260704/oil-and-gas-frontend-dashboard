@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useFiles } from '../context/FileContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Navigation, ArrowLeft } from 'lucide-react';
@@ -10,17 +11,18 @@ import { FileData } from '../types/files';
 const MapSection = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { activeFile, uploadedFiles } = useFiles();
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [currentFile, setCurrentFile] = useState<FileData | null>(null);
   
   useEffect(() => {
     // Handle data from the file that was passed from the dashboard
-    const fileData = location.state?.file;
+    const fileData = location.state?.file || activeFile;
     if (fileData) {
       setCurrentFile(fileData);
       extractMapDataFromFile(fileData);
     }
-  }, [location.state]);
+  }, [location.state, activeFile]);
   
   const extractMapDataFromFile = (file: FileData) => {
     // Extract location data from the file content if it exists
