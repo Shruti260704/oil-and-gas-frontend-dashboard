@@ -86,15 +86,15 @@ const Dashboard = () => {
                       <div 
                         key={file.id} 
                         className={`
-                          p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50
-                          ${activeFile?.id === file.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
+                          p-3 flex items-center justify-between cursor-pointer hover:bg-blue-900/30 transition-colors
+                          ${activeFile?.id === file.id ? 'bg-blue-900/50 border-l-4 border-blue-500' : ''}
                         `}
                         onClick={() => handleFileSelect(file)}
                       >
                         <div className="flex items-center space-x-3">
                           <File className="h-5 w-5" />
                           <div>
-                            <div className="font-medium">{file.name}</div>
+                            <div className="font-medium truncate max-w-[180px]">{file.name}</div>
                             <div className="text-xs text-gray-500">
                               {new Date(file.dateUploaded).toLocaleDateString()}
                             </div>

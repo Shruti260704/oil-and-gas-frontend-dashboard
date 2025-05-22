@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -106,6 +107,8 @@
 /* Mind Map Styling */
 .mind-map-node {
   @apply p-3 bg-primary/10 border border-primary/30 rounded-lg shadow-md text-sm backdrop-blur-sm transition-all hover:bg-primary/20;
+  min-width: 120px;
+  overflow: hidden;
 }
 
 .mind-map-node-parent {
@@ -142,6 +145,7 @@
   @apply transition-all duration-200 border border-transparent;
 }
 
+/* Updated file-item hover state - now using dark blue instead of white */
 .file-item:hover {
   @apply bg-blue-900/30 border-blue-700/30;
 }
@@ -246,17 +250,24 @@
   @apply bg-blue-800/70 px-3 py-1.5 rounded-md text-blue-100 border border-blue-700/50;
 }
 
+/* Improved location item styles to prevent text overlap */
 .location-item {
   @apply p-3 bg-blue-800/50 rounded-lg border border-blue-700/40 text-sm hover:bg-blue-800/80 transition-colors;
+  overflow: hidden;
 }
 
 .location-value {
-  @apply bg-blue-700/60 px-2 py-0.5 rounded-full text-white text-xs;
+  @apply bg-blue-700/60 px-2 py-0.5 rounded-full text-white text-xs whitespace-nowrap;
 }
 
 /* Map container enhancements */
 .map-container {
   @apply bg-blue-900/40 rounded-lg p-4 border border-blue-700/30 shadow-inner;
+}
+
+/* Fix text truncation for long text */
+.truncate-text {
+  @apply truncate max-w-full;
 }
 
 /* White background text color adjustments */

@@ -45,7 +45,7 @@ const MindMap = ({ file }: { file: FileData }) => {
       // Generate subtopic nodes (secondary branches)
       const subtopicNodes: MindMapNode[] = [];
       
-      // For each section, create 2-3 subtopics
+      // For each section, create 2-3 subtopics with more spacing
       sectionNodes.forEach((sectionNode, sectionIndex) => {
         // Get data keys as potential subtopics
         const dataKeys = Object.keys(file.content.data || {});
@@ -113,21 +113,21 @@ const MindMap = ({ file }: { file: FileData }) => {
   };
   
   const getNodePosition = (node: MindMapNode) => {
-    // Calculate position based on level and hierarchy
+    // Calculate position based on level and hierarchy with improved spacing
     let x = 0, y = 0;
     
     if (node.level === 0) {
       // Root node at center-left
-      x = 150;
+      x = 180;
       y = 250;
     } else if (node.level === 1) {
-      // Section nodes arranged horizontally at equal intervals
+      // Section nodes arranged horizontally at equal intervals with more vertical spacing
       const sectionCount = nodes.filter(n => n.level === 1).length;
       const sectionIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === node.id);
-      x = 350;
-      y = 100 + (sectionIndex * (400 / Math.max(sectionCount, 1)));
+      x = 400;
+      y = 100 + (sectionIndex * (450 / Math.max(sectionCount, 1)));
     } else if (node.level === 2) {
-      // Subtopic nodes positioned relative to their parent section
+      // Subtopic nodes positioned relative to their parent section with better distribution
       const parentNode = nodes.find(n => n.id === node.parent);
       if (parentNode) {
         const siblingCount = nodes.filter(n => n.parent === parentNode.id).length;
@@ -135,9 +135,9 @@ const MindMap = ({ file }: { file: FileData }) => {
         
         const parentIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === parentNode.id);
         
-        x = 550;
-        y = 50 + (parentIndex * (400 / Math.max(nodes.filter(n => n.level === 1).length, 1))) + 
-            ((siblingIndex + 0.5) * (300 / Math.max(siblingCount, 1)));
+        x = 650;
+        y = 50 + (parentIndex * (450 / Math.max(nodes.filter(n => n.level === 1).length, 1))) + 
+            ((siblingIndex + 0.5) * (350 / Math.max(siblingCount, 1)));
       }
     }
     
@@ -163,7 +163,7 @@ const MindMap = ({ file }: { file: FileData }) => {
       transform: `scale(${zoomLevel})`,
       transformOrigin: 'center',
       zIndex: 10 - node.level, // Higher z-index for more important nodes
-      maxWidth: node.level === 0 ? '180px' : node.level === 1 ? '160px' : '140px'
+      maxWidth: node.level === 0 ? '200px' : node.level === 1 ? '180px' : '160px'
     };
     
     return (
@@ -174,7 +174,7 @@ const MindMap = ({ file }: { file: FileData }) => {
         onClick={() => handleNodeClick(node)}
         data-node-id={node.id}
       >
-        {node.label}
+        <div className="truncate">{node.label}</div>
       </div>
     );
   };
@@ -197,10 +197,10 @@ const MindMap = ({ file }: { file: FileData }) => {
         
         // Parent connection point (right side or center-bottom based on level)
         if (parent.level === 0) {
-          parentX = parentPos.x + 90 + mapPosition.x; // right side of node
+          parentX = parentPos.x + 100 + mapPosition.x; // right side of node
           parentY = parentPos.y + 20 + mapPosition.y; // center of node
         } else {
-          parentX = parentPos.x + 80 + mapPosition.x; // right side of node
+          parentX = parentPos.x + 90 + mapPosition.x; // right side of node
           parentY = parentPos.y + 20 + mapPosition.y; // center of node
         }
         
@@ -229,7 +229,7 @@ const MindMap = ({ file }: { file: FileData }) => {
 
   // Handle map movement
   const handleMapMove = (direction: 'up' | 'down' | 'left' | 'right') => {
-    const moveDistance = 50;
+    const moveDistance = 80; // Increased from 50 to 80 for better navigation
     
     setMapPosition(prev => {
       switch(direction) {
@@ -245,6 +245,12 @@ const MindMap = ({ file }: { file: FileData }) => {
           return prev;
       }
     });
+  };
+  
+  // Add reset function to center the map
+  const resetMapPosition = () => {
+    setMapPosition({ x: 0, y: 0 });
+    setZoomLevel(1);
   };
   
   return (
@@ -273,6 +279,14 @@ const MindMap = ({ file }: { file: FileData }) => {
               onClick={handleZoomOut}
             >
               <ZoomOut className="h-4 w-4 mr-1" /> Zoom Out
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              onClick={resetMapPosition}
+            >
+              Center
             </Button>
           </div>
         </div>
@@ -319,7 +333,7 @@ const MindMap = ({ file }: { file: FileData }) => {
         {/* Mind Map Visualization */}
         <div 
           ref={mapRef} 
-          className="relative h-[500px] w-full overflow-hidden bg-blue-950/40 rounded-lg p-4 backdrop-blur-sm border border-blue-900/30"
+          className="relative h-[600px] w-full overflow-hidden bg-blue-950/40 rounded-lg p-4 backdrop-blur-sm border border-blue-900/30"
         >
           {/* Render connections between nodes */}
           {renderConnections()}
