@@ -77,6 +77,14 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
     return String(name);
   };
   
+  // More aggressive label shortening for pie chart to prevent overlap
+  const formatPieLabel = (name: string | number): string => {
+    if (typeof name === 'string') {
+      return name.length > 8 ? `${name.substring(0, 8)}...` : name;
+    }
+    return String(name);
+  };
+  
   return (
     <div>
       <p className="text-gray-600 mb-6 break-words">{summary}</p>
@@ -174,18 +182,19 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
               </div>
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={80}
+                      outerRadius={70}
                       fill="#8884d8"
                       dataKey="value"
                       label={({ name, percent }) => {
+                        // Use more aggressive shortening for pie labels
                         const displayName = typeof name === 'string' 
-                          ? (name.length > 10 ? `${name.substring(0, 10)}...` : name)
+                          ? formatPieLabel(name)
                           : String(name);
                         return `${displayName}: ${(percent * 100).toFixed(0)}%`;
                       }}
@@ -195,19 +204,20 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                       ))}
                     </Pie>
                     <Tooltip formatter={(value, name) => {
-                      const formattedName = typeof name === 'string'
-                        ? (name.length > 15 ? `${name.substring(0, 15)}...` : name)
-                        : String(name);
-                      return [value, formattedName];
+                      // Show full name in tooltip for reference
+                      return [value, name];
                     }} />
                     <Legend 
                       formatter={(value) => {
+                        // Use more aggressive shortening for legend items
                         if (typeof value === 'string') {
-                          return value.length > 15 ? `${value.substring(0, 15)}...` : value;
+                          return formatPieLabel(value);
                         }
                         return String(value);
                       }}
-                      wrapperStyle={{ fontSize: '12px' }} 
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '15px' }} 
+                      layout="horizontal"
+                      align="center"
                     />
                   </PieChart>
                 </ResponsiveContainer>
