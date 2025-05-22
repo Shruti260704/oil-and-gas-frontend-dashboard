@@ -77,12 +77,40 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
     return String(name);
   };
   
-  // More aggressive label shortening for pie chart to prevent overlap
+  // Even more aggressive label shortening for pie chart to prevent overlap
   const formatPieLabel = (name: string | number): string => {
     if (typeof name === 'string') {
-      return name.length > 8 ? `${name.substring(0, 8)}...` : name;
+      return name.length > 5 ? `${name.substring(0, 5)}...` : name;
     }
     return String(name);
+  };
+
+  // Custom pie chart label renderer to prevent overlapping
+  const renderCustomizedPieLabel = (props: any) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, index } = props;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+    const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+    const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+    
+    // Only show label for segments with sufficient percentage
+    if (percent < 0.05) return null;
+    
+    const displayName = typeof name === 'string' 
+      ? formatPieLabel(name)
+      : String(name);
+      
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#888"
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={10}
+      >
+        {`${displayName}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
   };
   
   return (
@@ -182,31 +210,27 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
               </div>
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                  <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={70}
+                      outerRadius={60}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => {
-                        // Use more aggressive shortening for pie labels
-                        const displayName = typeof name === 'string' 
-                          ? formatPieLabel(name)
-                          : String(name);
-                        return `${displayName}: ${(percent * 100).toFixed(0)}%`;
-                      }}
+                      label={renderCustomizedPieLabel}
                     >
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value, name) => {
-                      // Show full name in tooltip for reference
-                      return [value, name];
-                    }} />
+                    <Tooltip 
+                      formatter={(value, name) => {
+                        // Show full name in tooltip for reference
+                        return [value, name];
+                      }}
+                    />
                     <Legend 
                       formatter={(value) => {
                         // Use more aggressive shortening for legend items
@@ -215,9 +239,10 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         }
                         return String(value);
                       }}
-                      wrapperStyle={{ fontSize: '12px', paddingTop: '15px' }} 
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} 
                       layout="horizontal"
                       align="center"
+                      verticalAlign="bottom"
                     />
                   </PieChart>
                 </ResponsiveContainer>
