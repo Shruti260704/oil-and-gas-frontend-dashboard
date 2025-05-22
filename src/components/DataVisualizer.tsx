@@ -93,7 +93,7 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
     const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
     
     // Only show label for segments with sufficient percentage
-    if (percent < 0.05) return null;
+    if (percent < 25) return null;
     
     const displayName = typeof name === 'string' 
       ? formatPieLabel(name)
