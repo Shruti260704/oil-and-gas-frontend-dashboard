@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { FileData } from '../types/files';
-import { Network, X } from 'lucide-react';
+import { Network, X, ZoomIn, ZoomOut, Move } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -16,11 +16,15 @@ type MindMapNode = {
 const MindMap = ({ file }: { file: FileData }) => {
   const [selectedNode, setSelectedNode] = useState<MindMapNode | null>(null);
   const [nodes, setNodes] = useState<MindMapNode[]>([]);
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   
-  // Generate mind map nodes based on file topics
+  // Generate mind map nodes based on file topics with hierarchical structure
   useEffect(() => {
     const generateNodes = () => {
       const fileTopics = file.content.topics;
+      
+      // Main topic/root node
       const rootNode: MindMapNode = {
         id: 'root',
         label: file.name,
@@ -28,63 +32,64 @@ const MindMap = ({ file }: { file: FileData }) => {
         description: file.content.summary
       };
       
-      // Generate top-level nodes from topics
-      const topicNodes = fileTopics.map((topic, index) => ({
-        id: `topic-${index}`,
+      // Generate section nodes (primary branches)
+      const sectionNodes = fileTopics.map((topic, index) => ({
+        id: `section-${index}`,
         label: topic,
         parent: 'root',
         level: 1,
         description: generateTopicDescription(topic, file)
       }));
       
-      // Generate sub-nodes based on data keys
-      const dataKeys = Object.keys(file.content.data || {});
-      const subNodes: MindMapNode[] = [];
+      // Generate subtopic nodes (secondary branches)
+      const subtopicNodes: MindMapNode[] = [];
       
-      topicNodes.forEach((topicNode, topicIndex) => {
-        if (dataKeys[topicIndex]) {
-          subNodes.push({
-            id: `subtopic-${topicIndex}-0`,
-            label: `${dataKeys[topicIndex]} Analysis`,
-            parent: topicNode.id,
+      // For each section, create 2-3 subtopics
+      sectionNodes.forEach((sectionNode, sectionIndex) => {
+        // Get data keys as potential subtopics
+        const dataKeys = Object.keys(file.content.data || {});
+        
+        // Create subtopics based on data keys or generated content
+        const subtopicsCount = Math.min(Math.floor(Math.random() * 2) + 2, dataKeys.length || 3);
+        
+        for (let i = 0; i < subtopicsCount; i++) {
+          const subtopicLabel = dataKeys[i] || getRandomSubtopic(sectionNode.label, i);
+          
+          subtopicNodes.push({
+            id: `subtopic-${sectionIndex}-${i}`,
+            label: subtopicLabel,
+            parent: sectionNode.id,
             level: 2,
-            description: `Detailed analysis of ${dataKeys[topicIndex]} in relation to ${topicNode.label}.`
+            description: `This subtopic examines ${subtopicLabel} in relation to ${sectionNode.label}. It provides further analysis and insights from the document.`
           });
         }
-        
-        // Add additional context sub-nodes
-        subNodes.push({
-          id: `subtopic-${topicIndex}-1`,
-          label: getRandomSubtopic(topicNode.label),
-          parent: topicNode.id,
-          level: 2,
-          description: `Additional context and information regarding ${topicNode.label} in the document.`
-        });
       });
       
-      return [rootNode, ...topicNodes, ...subNodes];
+      return [rootNode, ...sectionNodes, ...subtopicNodes];
     };
     
     setNodes(generateNodes());
   }, [file]);
   
-  const getRandomSubtopic = (topic: string) => {
+  const getRandomSubtopic = (topic: string, index: number) => {
     const subtopics = [
-      `${topic} Impact`,
+      `${topic} Analysis`,
       `${topic} Methodology`,
+      `${topic} Impact Assessment`,
       `${topic} Future Trends`,
       `${topic} Key Metrics`,
+      `${topic} Implementation`,
       `${topic} Challenges`
     ];
-    return subtopics[Math.floor(Math.random() * subtopics.length)];
+    return subtopics[index % subtopics.length];
   };
   
   const generateTopicDescription = (topic: string, file: FileData) => {
     const descriptions = [
-      `${topic} is a critical component discussed in the ${file.name} document. It relates to the core industry metrics and contains valuable insights for operational decisions.`,
-      `The document section covering ${topic} presents key findings about industry trends and performance indicators relevant to oil & gas operations.`,
-      `${topic} analysis in this document reveals important correlations between operational factors and business outcomes, with supporting data.`,
-      `This section examines ${topic} in detail, providing comparative analysis against industry benchmarks and historical performance data.`
+      `<strong>${topic}</strong> is a critical component discussed in the ${file.name} document. It relates to the core industry metrics and contains valuable insights for operational decisions.`,
+      `The document section covering <strong>${topic}</strong> presents key findings about industry trends and performance indicators relevant to oil & gas operations.`,
+      `<strong>${topic}</strong> analysis in this document reveals important correlations between operational factors and business outcomes, with supporting data.`,
+      `This section examines <strong>${topic}</strong> in detail, providing comparative analysis against industry benchmarks and historical performance data.`
     ];
     
     return descriptions[Math.floor(Math.random() * descriptions.length)];
@@ -98,43 +103,64 @@ const MindMap = ({ file }: { file: FileData }) => {
     setSelectedNode(null);
   };
   
-  const renderNode = (node: MindMapNode, index: number) => {
-    const levelClasses = {
-      0: 'bg-primary text-white',
-      1: 'bg-blue-800/50 border-blue-600/50',
-      2: 'bg-blue-900/30 border-blue-700/30'
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.2, 2));
+  };
+  
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.2, 0.6));
+  };
+  
+  const renderNode = (node: MindMapNode) => {
+    // Style based on node level
+    const nodeClasses = {
+      0: "bg-primary text-white font-medium mind-map-node-parent", // Root node
+      1: "bg-blue-800/50 border-blue-600/50 text-blue-50", // Section node
+      2: "bg-blue-900/30 border-blue-700/30 text-blue-100" // Subtopic node
     };
     
-    // Calculate position based on level and index
-    let positionStyle = {};
+    // Calculate position based on level and hierarchy
+    let x = 0, y = 0;
+    
     if (node.level === 0) {
-      positionStyle = { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' };
+      // Root node at center-left
+      x = 150;
+      y = 250;
     } else if (node.level === 1) {
-      // Position level 1 nodes in a circle around the root
-      const angle = (2 * Math.PI / file.content.topics.length) * index;
-      const radius = 150;
-      const x = Math.cos(angle) * radius + 50;
-      const y = Math.sin(angle) * radius + 50;
-      positionStyle = { left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' };
+      // Section nodes arranged horizontally at equal intervals
+      const sectionCount = nodes.filter(n => n.level === 1).length;
+      const sectionIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === node.id);
+      x = 350;
+      y = 100 + (sectionIndex * (400 / Math.max(sectionCount, 1)));
     } else if (node.level === 2) {
-      // Find parent position and offset
+      // Subtopic nodes positioned relative to their parent section
       const parentNode = nodes.find(n => n.id === node.parent);
-      if (parentNode && parentNode.level === 1) {
-        const parentIndex = nodes.findIndex(n => n.id === parentNode.id);
-        const angle = (2 * Math.PI / file.content.topics.length) * parentIndex;
-        const subNodeAngleOffset = (index % 2 === 0) ? -0.3 : 0.3;
-        const radius = 230;
-        const x = Math.cos(angle + subNodeAngleOffset) * radius + 50;
-        const y = Math.sin(angle + subNodeAngleOffset) * radius + 50;
-        positionStyle = { left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' };
+      if (parentNode) {
+        const siblingCount = nodes.filter(n => n.parent === parentNode.id).length;
+        const siblingIndex = nodes.filter(n => n.parent === parentNode.id).findIndex(n => n.id === node.id);
+        
+        const parentIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === parentNode.id);
+        
+        x = 550;
+        y = 50 + (parentIndex * (400 / Math.max(nodes.filter(n => n.level === 1).length, 1))) + 
+            ((siblingIndex + 0.5) * (300 / Math.max(siblingCount, 1)));
       }
     }
+    
+    const nodeStyle = {
+      left: `${x + mapPosition.x}px`,
+      top: `${y + mapPosition.y}px`,
+      transform: `scale(${zoomLevel})`,
+      transformOrigin: 'center',
+      zIndex: 10 - node.level, // Higher z-index for more important nodes
+      maxWidth: node.level === 0 ? '180px' : node.level === 1 ? '160px' : '140px'
+    };
     
     return (
       <div 
         key={node.id}
-        className={`absolute rounded-lg p-3 shadow-lg cursor-pointer transition-all hover:shadow-primary/30 hover:scale-105 ${levelClasses[node.level as keyof typeof levelClasses]}`}
-        style={positionStyle}
+        className={`absolute rounded-lg p-3 shadow-lg cursor-pointer transition-all hover:shadow-primary/30 hover:scale-105 mind-map-node ${nodeClasses[node.level as keyof typeof nodeClasses]}`}
+        style={nodeStyle}
         onClick={() => handleNodeClick(node)}
       >
         {node.label}
@@ -143,7 +169,6 @@ const MindMap = ({ file }: { file: FileData }) => {
   };
 
   const renderConnections = () => {
-    // Draw connections between parent and child nodes
     return nodes
       .filter(node => node.parent)
       .map(node => {
@@ -152,34 +177,153 @@ const MindMap = ({ file }: { file: FileData }) => {
         
         if (!parent) return null;
         
-        // Create SVG line between nodes
+        // Calculate positions of parent and child for drawing lines
+        let parentX = 0, parentY = 0, childX = 0, childY = 0;
+        
+        // Parent position
+        if (parent.level === 0) {
+          parentX = 150 + 90; // center of node
+          parentY = 250 + 20; // center of node
+        } else if (parent.level === 1) {
+          const sectionCount = nodes.filter(n => n.level === 1).length;
+          const sectionIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === parent.id);
+          parentX = 350 + 80; // center of node
+          parentY = 100 + (sectionIndex * (400 / Math.max(sectionCount, 1))) + 20; // center of node
+        }
+        
+        // Child position
+        if (child.level === 1) {
+          const sectionCount = nodes.filter(n => n.level === 1).length;
+          const sectionIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === child.id);
+          childX = 350; // left edge of node
+          childY = 100 + (sectionIndex * (400 / Math.max(sectionCount, 1))) + 20; // center of node
+        } else if (child.level === 2) {
+          const parentNode = nodes.find(n => n.id === child.parent);
+          if (parentNode) {
+            const siblingCount = nodes.filter(n => n.parent === parentNode.id).length;
+            const siblingIndex = nodes.filter(n => n.parent === parentNode.id).findIndex(n => n.id === child.id);
+            
+            const parentIndex = nodes.filter(n => n.level === 1).findIndex(n => n.id === parentNode.id);
+            
+            childX = 550; // left edge of node
+            childY = 50 + (parentIndex * (400 / Math.max(nodes.filter(n => n.level === 1).length, 1))) + 
+                ((siblingIndex + 0.5) * (300 / Math.max(siblingCount, 1))) + 20; // center of node
+          }
+        }
+        
+        // Add position offset for panning
+        parentX += mapPosition.x;
+        parentY += mapPosition.y;
+        childX += mapPosition.x;
+        childY += mapPosition.y;
+        
+        // Draw SVG line between nodes
         return (
           <svg 
             key={`${parent.id}-${child.id}`} 
             className="absolute top-0 left-0 w-full h-full pointer-events-none"
-            style={{ zIndex: 0 }}
+            style={{ zIndex: 1 }}
           >
-            <line 
-              x1="50%" 
-              y1="50%" 
-              x2="50%" 
-              y2="50%" 
-              className="mind-map-link" 
+            <path
+              d={`M ${parentX} ${parentY} C ${(parentX + childX) / 2 + 50} ${parentY}, ${(parentX + childX) / 2 - 50} ${childY}, ${childX} ${childY}`}
+              className={`mind-map-link ${child.level === 1 ? 'stroke-primary/80' : 'stroke-primary/50'}`}
+              fill="none"
+              strokeWidth={child.level === 1 ? 2 : 1.5}
               strokeDasharray={child.level === 2 ? "5,5" : "none"}
             />
           </svg>
         );
       });
   };
+
+  // Handle map movement
+  const handleMapMove = (direction: 'up' | 'down' | 'left' | 'right') => {
+    const moveDistance = 50;
+    
+    setMapPosition(prev => {
+      switch(direction) {
+        case 'up':
+          return { ...prev, y: prev.y + moveDistance };
+        case 'down':
+          return { ...prev, y: prev.y - moveDistance };
+        case 'left':
+          return { ...prev, x: prev.x + moveDistance };
+        case 'right':
+          return { ...prev, x: prev.x - moveDistance };
+        default:
+          return prev;
+      }
+    });
+  };
   
   return (
     <div className="mind-map-container relative">
-      <div className="bg-blue-950/30 rounded-lg p-4 shadow-md mb-4 backdrop-blur-sm border border-blue-900/30">
-        <h3 className="text-lg font-medium mb-3 text-blue-100 flex items-center gap-2">
-          <Network className="h-4 w-4 text-primary" />
-          Content Structure: {file.name}
-        </h3>
-        <p className="text-sm text-blue-300 mb-6">{file.content.summary}</p>
+      <div className="bg-blue-950/30 rounded-lg p-4 shadow-md backdrop-blur-sm border border-blue-900/30">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-blue-100 flex items-center gap-2">
+            <Network className="h-4 w-4 text-primary" />
+            Content Structure: {file.name}
+          </h3>
+          
+          {/* Controls */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              onClick={handleZoomIn}
+            >
+              <ZoomIn className="h-4 w-4 mr-1" /> Zoom In
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              onClick={handleZoomOut}
+            >
+              <ZoomOut className="h-4 w-4 mr-1" /> Zoom Out
+            </Button>
+          </div>
+        </div>
+        
+        {/* Navigation controls */}
+        <div className="bg-blue-950/60 p-3 rounded-lg border border-blue-800/30 mb-4 flex flex-wrap gap-2">
+          <p className="text-sm text-blue-300 mr-2">Map Navigation:</p>
+          <div className="grid grid-cols-3 gap-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="aspect-square p-1 col-start-2"
+              onClick={() => handleMapMove('up')}
+            >
+              <Move className="h-4 w-4 rotate-0" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="aspect-square p-1"
+              onClick={() => handleMapMove('left')}
+            >
+              <Move className="h-4 w-4 -rotate-90" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="aspect-square p-1"
+              onClick={() => handleMapMove('right')}
+            >
+              <Move className="h-4 w-4 rotate-90" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="aspect-square p-1 col-start-2"
+              onClick={() => handleMapMove('down')}
+            >
+              <Move className="h-4 w-4 rotate-180" />
+            </Button>
+          </div>
+        </div>
         
         {/* Mind Map Visualization */}
         <div className="relative h-[500px] w-full overflow-hidden bg-blue-950/40 rounded-lg p-4 backdrop-blur-sm border border-blue-900/30">
@@ -187,12 +331,12 @@ const MindMap = ({ file }: { file: FileData }) => {
           {renderConnections()}
           
           {/* Render nodes */}
-          {nodes.map((node, index) => renderNode(node, index))}
+          {nodes.map(renderNode)}
           
           {/* Node information popup */}
           {selectedNode && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-blue-950/80 backdrop-blur-sm p-4">
-              <Card className="w-full max-w-md relative bg-blue-900/90 border-blue-700/50">
+            <div className="absolute inset-0 flex items-center justify-center z-20 bg-blue-950/80 backdrop-blur-sm p-4">
+              <Card className="w-full max-w-md animate-fade-in relative bg-blue-900/90 border-blue-700/50 shadow-xl">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -203,22 +347,51 @@ const MindMap = ({ file }: { file: FileData }) => {
                 </Button>
                 
                 <CardContent className="p-5">
-                  <h4 className="text-lg font-medium text-blue-100 mb-2">{selectedNode.label}</h4>
-                  <div className="bg-blue-950/50 p-4 rounded-lg border border-blue-800/30">
-                    <p className="text-blue-200">{selectedNode.description}</p>
+                  <h4 className="text-lg font-semibold text-blue-100 mb-2 pb-2 border-b border-blue-700/50">
+                    {selectedNode.label}
+                  </h4>
+                  <div className="bg-blue-950/50 p-4 rounded-lg border border-blue-800/30 mb-4">
+                    <p className="text-blue-200" dangerouslySetInnerHTML={{ __html: selectedNode.description }}></p>
                   </div>
                   
-                  {selectedNode.level > 0 && (
-                    <div className="mt-4">
+                  <div className="space-y-4">
+                    {/* Hierarchy information */}
+                    <div>
+                      <h5 className="text-sm text-blue-300 mb-2">Position in Document Structure</h5>
+                      <div className="flex items-center text-xs space-x-2 bg-blue-900/40 p-2 rounded-md">
+                        {selectedNode.level === 0 ? (
+                          <span className="text-blue-200">Main Document</span>
+                        ) : selectedNode.level === 1 ? (
+                          <>
+                            <span className="text-blue-200">Main Document</span>
+                            <span className="text-blue-400">→</span>
+                            <span className="text-primary">{selectedNode.label}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-blue-200">Main Document</span>
+                            <span className="text-blue-400">→</span>
+                            <span className="text-blue-200">
+                              {nodes.find(n => n.id === selectedNode.parent)?.label}
+                            </span>
+                            <span className="text-blue-400">→</span>
+                            <span className="text-primary">{selectedNode.label}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Related topics */}
+                    <div>
                       <h5 className="text-sm text-blue-300 mb-2">Related Topics</h5>
                       <div className="flex flex-wrap gap-2">
                         {nodes
                           .filter(node => 
-                            node.parent === selectedNode.parent || 
+                            (node.parent === selectedNode.parent && node.id !== selectedNode.id) || 
                             node.id === selectedNode.parent ||
                             node.parent === selectedNode.id
                           )
-                          .filter(node => node.id !== selectedNode.id)
+                          .slice(0, 5)
                           .map(node => (
                             <Button 
                               key={node.id}
@@ -233,7 +406,7 @@ const MindMap = ({ file }: { file: FileData }) => {
                         }
                       </div>
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -254,16 +427,29 @@ const MindMap = ({ file }: { file: FileData }) => {
               <span className="text-blue-200">Related Concepts</span>
             </div>
           </div>
+          
+          {/* Structure illustration */}
+          <div className="absolute top-3 left-3 bg-blue-950/70 p-3 rounded-lg shadow-md text-xs backdrop-blur-md border border-blue-800/40 max-w-[180px]">
+            <div className="text-blue-200 mb-1">Document Structure</div>
+            <pre className="text-blue-300 text-[9px] leading-tight">
+{`Main Topic
+├── Section 1
+│   ├── Subtopic A
+│   ├── Subtopic B
+├── Section 2
+│   ├── Subtopic C`}
+            </pre>
+          </div>
         </div>
         
         <div className="mt-4 p-4 bg-blue-950/40 rounded-lg border border-blue-900/30">
           <h4 className="text-sm font-medium mb-3 text-blue-100">How to use</h4>
           <p className="text-xs text-blue-300 mb-2">
-            Click on any node in the mind map to view detailed information and explore relationships between concepts.
+            Click on any node to view detailed information. Use the navigation controls to move around the mind map and zoom controls to adjust the view.
           </p>
           <div className="flex gap-2 items-center text-primary text-xs">
             <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
-            <span>Interactive visualization - click nodes to explore</span>
+            <span>Interactive visualization - click nodes to explore details and relationships</span>
           </div>
         </div>
       </div>
