@@ -8,7 +8,7 @@ import { FileData } from '../types/files';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Database, File, Network, Layers, MapPin, FilePlus, Navigation } from "lucide-react";
+import { Database, File, Network, Layers, Navigation } from "lucide-react";
 import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
@@ -57,7 +57,11 @@ const Dashboard = () => {
   };
 
   const handleViewMaps = () => {
-    navigate('/maps');
+    if (activeFile) {
+      navigate('/maps', { state: { file: activeFile } });
+    } else {
+      toast.error("Please select a file first");
+    }
   };
 
   return (
@@ -73,7 +77,7 @@ const Dashboard = () => {
           <div className="lg:col-span-1">
             <Card className="p-4 h-full shadow-lg card-hover card-gradient">
               <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
-                <FilePlus className="h-5 w-5 text-primary" />
+                <File className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-semibold text-blue-100">Upload Files</h2>
               </div>
               <FileUpload onFileUpload={handleFileUpload} />
@@ -143,7 +147,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <Tabs defaultValue="insights" className="w-full tabs-custom">
-                <TabsList className="grid grid-cols-5 mb-6 tabs-list">
+                <TabsList className="grid grid-cols-4 mb-6 tabs-list">
                   <TabsTrigger value="insights" className="flex items-center gap-2 text-blue-200">
                     <Database className="h-4 w-4" /> Insight Panel
                   </TabsTrigger>
@@ -152,9 +156,6 @@ const Dashboard = () => {
                   </TabsTrigger>
                   <TabsTrigger value="compare" className="flex items-center gap-2 text-blue-200">
                     <Layers className="h-4 w-4" /> File Comparison
-                  </TabsTrigger>
-                  <TabsTrigger value="maps" className="flex items-center gap-2 text-blue-200">
-                    <MapPin className="h-4 w-4" /> Maps
                   </TabsTrigger>
                   <TabsTrigger value="geomap" className="flex items-center gap-2 text-blue-200">
                     <Navigation className="h-4 w-4" /> Interactive Map
@@ -199,61 +200,6 @@ const Dashboard = () => {
                           <Layers className="h-16 w-16 text-blue-500/60 mx-auto mb-4" />
                           <p className="text-blue-200 font-medium mb-2">Select two files to compare from the file list</p>
                           <p className="text-sm text-primary font-bold">Currently selected: {selectedFiles.length}/2</p>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="maps">
-                  <Card className="p-6 shadow-lg card-hover card-gradient">
-                    <div className="flex items-center gap-2 mb-6 border-b pb-4 border-blue-800/30">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      <h2 className="text-xl font-semibold text-blue-100">Maps</h2>
-                    </div>
-                    <div className="viz-bg">
-                      {activeFile ? (
-                        <div className="space-y-6">
-                          <p className="text-blue-300">
-                            View all geographical maps extracted from {activeFile.name}
-                          </p>
-                          <div className="text-center">
-                            <Button onClick={handleViewGraphs} className="px-8">
-                              <MapPin className="h-4 w-4 mr-2" /> View Full Map Section
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4 mt-6">
-                            {/* Preview images */}
-                            <div className="bg-blue-950/40 border border-blue-800/30 p-4 rounded-lg">
-                              <h4 className="text-blue-200 mb-2">Geographic Distribution</h4>
-                              <div className="aspect-video bg-blue-900/30 flex items-center justify-center rounded-md relative overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1501854140801-50d01698950b" alt="Geographic map" className="object-cover w-full h-full" />
-                                <div className="absolute bottom-0 left-0 right-0 bg-blue-950/70 px-3 py-2 text-xs text-blue-200">
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-3 w-3 text-red-400" />
-                                    North America
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="bg-blue-950/40 border border-blue-800/30 p-4 rounded-lg">
-                              <h4 className="text-blue-200 mb-2">Mineral Deposits</h4>
-                              <div className="aspect-video bg-blue-900/30 flex items-center justify-center rounded-md relative overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1472396961693-142e6e269027" alt="Mineral map" className="object-cover w-full h-full" />
-                                <div className="absolute bottom-0 left-0 right-0 bg-blue-950/70 px-3 py-2 text-xs text-blue-200">
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-3 w-3 text-red-400" />
-                                    South America
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-12 bg-blue-950/50 rounded-lg border border-blue-900/30 backdrop-blur-sm">
-                          <MapPin className="h-16 w-16 text-blue-500/60 mx-auto mb-4" />
-                          <p className="text-blue-200 font-medium mb-2">Select a file to view extracted maps</p>
                         </div>
                       )}
                     </div>
