@@ -151,6 +151,49 @@ const InsightPanel = ({ file }: { file: FileData }) => {
   
   return (
     <div className="space-y-8">
+      {/* Document Query Section - Moved to top */}
+      <div>
+        <Card className="bg-blue-950/40 border border-blue-800/30 backdrop-blur-md">
+          <CardContent className="p-6">
+            <div className="flex items-center mb-4">
+              <MessageSquare className="h-5 w-5 mr-2 text-primary flex-shrink-0" />
+              <h3 className="font-medium text-blue-200 truncate">Ask About This Document</h3>
+            </div>
+            
+            <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-800/40">
+              <p className="text-sm text-blue-300 mb-4">
+                Have questions about this document? Ask our AI for insights, summaries, or explanations about the content.
+              </p>
+              
+              <form onSubmit={handleQuerySubmit} className="space-y-4">
+                <div className="relative">
+                  <Input
+                    placeholder="E.g., What are the key findings in this report?"
+                    value={queryInput}
+                    onChange={(e) => setQueryInput(e.target.value)}
+                    className="bg-blue-950/50 border-blue-700/50 text-blue-100 placeholder:text-blue-400/70"
+                  />
+                  <Button 
+                    type="submit" 
+                    size="sm"
+                    disabled={isLoading || !queryInput.trim()}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8"
+                  >
+                    {isLoading ? "Processing..." : <SendHorizonal className="h-4 w-4" />}
+                  </Button>
+                </div>
+                
+                {queryResponse && (
+                  <div className="mt-4 bg-blue-900/40 p-4 rounded-lg border border-blue-700/40 animate-fade-in">
+                    <p className="text-blue-100 break-words">{queryResponse}</p>
+                  </div>
+                )}
+              </form>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Charts Section */}
       <div>
         <h3 className="text-lg font-medium mb-4 text-blue-100">Data Visualization</h3>
@@ -429,45 +472,6 @@ const InsightPanel = ({ file }: { file: FileData }) => {
                 <li>The statistical values are calculated from the available numerical data.</li>
                 <li>For more detailed analysis, use the Mind Map and Comparison tools.</li>
               </ul>
-            </div>
-            
-            {/* Document Query Section */}
-            <div className="mt-10 pt-6 border-t border-blue-800/40">
-              <div className="flex items-center mb-4">
-                <MessageSquare className="h-5 w-5 mr-2 text-primary flex-shrink-0" />
-                <h3 className="font-medium text-blue-200 truncate">Ask About This Document</h3>
-              </div>
-              
-              <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-800/40">
-                <p className="text-sm text-blue-300 mb-4">
-                  Have questions about this document? Ask our AI for insights, summaries, or explanations about the content.
-                </p>
-                
-                <form onSubmit={handleQuerySubmit} className="space-y-4">
-                  <div className="relative">
-                    <Input
-                      placeholder="E.g., What are the key findings in this report?"
-                      value={queryInput}
-                      onChange={(e) => setQueryInput(e.target.value)}
-                      className="bg-blue-950/50 border-blue-700/50 text-blue-100 placeholder:text-blue-400/70"
-                    />
-                    <Button 
-                      type="submit" 
-                      size="sm"
-                      disabled={isLoading || !queryInput.trim()}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8"
-                    >
-                      {isLoading ? "Processing..." : <SendHorizonal className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  
-                  {queryResponse && (
-                    <div className="mt-4 bg-blue-900/40 p-4 rounded-lg border border-blue-700/40 animate-fade-in">
-                      <p className="text-blue-100 break-words">{queryResponse}</p>
-                    </div>
-                  )}
-                </form>
-              </div>
             </div>
           </CardContent>
         </Card>
