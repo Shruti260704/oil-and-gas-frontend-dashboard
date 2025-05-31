@@ -540,13 +540,6 @@ const MindMap = ({ file }: { file: FileData }) => {
       event.stopPropagation();
       event.preventDefault();
       toggleNodeCollapse(d.data.id, event);
-      
-      // Force redraw after a brief delay to ensure state updates are applied
-      setTimeout(() => {
-        const visibleNodes = getVisibleNodes();
-        const visibleEdges = getVisibleEdges(visibleNodes);
-        renderMindMap(visibleNodes, visibleEdges);
-      }, 50);
     });
 
     // Pulse effect for the arrow buttons
