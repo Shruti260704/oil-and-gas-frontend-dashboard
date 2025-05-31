@@ -785,45 +785,52 @@ const MindMap = ({ file }: { file: FileData }) => {
 
   return (
     <div className="mind-map-container relative">
-      <div className="bg-blue-950/30 rounded-lg p-4 shadow-md backdrop-blur-sm border border-blue-900/30">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-blue-950/30 rounded-lg p-3 md:p-4 shadow-md backdrop-blur-sm border border-blue-900/30">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 md:mb-4">
           <h3 className="text-lg font-medium text-blue-100 flex items-center gap-2">
             <Network className="h-4 w-4 text-primary" />
-            Content Structure: {file.name}
+            <span className="truncate max-w-[180px] sm:max-w-[300px] md:max-w-none">
+              File: {file.name}
+            </span>
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
-              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60 text-xs sm:text-sm flex-1 sm:flex-none"
               onClick={handleRefreshMindMap}
               disabled={loading || refreshing}
             >
-              <RefreshCw className={`h-4 w-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
               {refreshing ? 'Updating...' : 'Refresh Map'}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60 text-xs sm:text-sm flex-1 sm:flex-none px-2 sm:px-3"
               onClick={handleZoomIn}
             >
-              <ZoomIn className="h-4 w-4 mr-1" /> Zoom In
+              <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1" />
+              <span className="hidden xs:inline">Zoom In</span>
+              <span className="xs:hidden">+</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60 text-xs sm:text-sm flex-1 sm:flex-none px-2 sm:px-3"
               onClick={handleZoomOut}
             >
-              <ZoomOut className="h-4 w-4 mr-1" /> Zoom Out
+              <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1" />
+              <span className="hidden xs:inline">Zoom Out</span>
+              <span className="xs:hidden">-</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60"
+              className="bg-blue-900/40 border-blue-800/40 hover:bg-blue-800/60 text-xs sm:text-sm flex-1 sm:flex-none"
               onClick={handleResetView}
             >
+              <Move className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1 hidden xs:inline-block" />
               Center
             </Button>
           </div>
@@ -833,54 +840,54 @@ const MindMap = ({ file }: { file: FileData }) => {
           className="relative mx-auto"
           style={{
             width: '100%',
-            height: 600,
+            height: 'min(70vh, 600px)', // Responsive height
             overflow: 'hidden',
             background: 'linear-gradient(135deg, #0f172a 60%, #1e293b 100%)',
-            borderRadius: '1.5rem',
+            borderRadius: '1rem',
             border: '1px solid #334155',
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
           }}
         >
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center z-30 bg-blue-950/70">
-              <span className="text-blue-200 text-lg">Loading Mind Map...</span>
+              <span className="text-blue-200 text-sm sm:text-lg">Loading Mind Map...</span>
             </div>
           )}
           <svg
             ref={svgRef}
             width="100%"
             height="100%"
-            className="cursor-grab active:cursor-grabbing"
+            className="cursor-grab active:cursor-grabbing touch-manipulation"
           />
-          {/* Legend */}
-          <div className="absolute bottom-3 right-3 bg-blue-950/70 p-3 rounded-lg shadow-md text-xs backdrop-blur-md border border-blue-800/40">
+          {/* Legend - hidden on very small screens */}
+          <div className="absolute bottom-3 right-3 bg-blue-950/70 p-2 sm:p-3 rounded-lg shadow-md text-[10px] xs:text-xs backdrop-blur-md border border-blue-800/40 max-w-[140px] sm:max-w-none">
             <div className="flex items-center mb-1">
-              <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
-              <span className="text-blue-200">Main Document</span>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-primary rounded-full mr-1 sm:mr-2"></div>
+              <span className="text-blue-200 truncate">Main Document</span>
             </div>
             <div className="flex items-center mb-1">
-              <div className="w-3 h-3 bg-blue-800/50 border border-blue-600/50 rounded-full mr-2"></div>
-              <span className="text-blue-200">Primary Topics</span>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-800/50 border border-blue-600/50 rounded-full mr-1 sm:mr-2"></div>
+              <span className="text-blue-200 truncate">Primary Topics</span>
             </div>
             <div className="flex items-center mb-1">
-              <div className="w-6 h-4 flex items-center justify-center bg-blue-950 rounded-full mr-2">
-                <ChevronRight className="h-3 w-3 text-blue-300" />
+              <div className="w-4 h-3 sm:w-6 sm:h-4 flex items-center justify-center bg-blue-950 rounded-full mr-1 sm:mr-2">
+                <ChevronRight className="h-2 w-2 sm:h-3 sm:w-3 text-blue-300" />
               </div>
-              <span className="text-blue-200">Expandable Topic</span>
+              <span className="text-blue-200 truncate">Expandable Topic</span>
             </div>
           </div>
         </div>
-        <div className="mt-4 p-4 bg-blue-950/40 rounded-lg border border-blue-900/30">
-          <h4 className="text-sm font-medium mb-3 text-blue-100">How to use</h4>
-          <p className="text-xs text-blue-300 mb-2">
+        <div className="mt-3 md:mt-4 p-3 md:p-4 bg-blue-950/40 rounded-lg border border-blue-900/30">
+          <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-blue-100">How to use</h4>
+          <p className="text-[10px] xs:text-xs text-blue-300 mb-2">
             Click on any node to query about that topic and view insights. Click on arrow buttons to expand or collapse nodes. Drag to pan the view, use mouse wheel or buttons to zoom.
           </p>
-          <div className="flex gap-2 items-center text-primary text-xs">
-            <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
+          <div className="flex gap-2 items-center text-primary text-[10px] xs:text-xs">
+            <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full"></span>
             <span>Interactive visualization - explore topics and their relationships</span>
           </div>
-          <div className="flex gap-2 items-center text-blue-300 text-xs mt-1">
-            <RefreshCw className="h-3 w-3 text-blue-400" />
+          <div className="flex gap-2 items-center text-blue-300 text-[10px] xs:text-xs mt-1">
+            <RefreshCw className="h-2 w-2 sm:h-3 sm:w-3 text-blue-400" />
             <span>Click "Refresh Map" to generate an updated mind map from the backend</span>
           </div>
         </div>

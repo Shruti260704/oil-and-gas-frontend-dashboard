@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			screens: {
+				'xs': '480px', // Add extra small breakpoint
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -104,13 +106,53 @@ export default {
 					'50%': {
 						opacity: '0.5'
 					}
+				},
+				'scale-in': {
+					'0%': {
+						transform: 'scale(0.9)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'fade-slide-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'mobile-menu-in': {
+					'0%': {
+						transform: 'translateX(-100%)'
+					},
+					'100%': {
+						transform: 'translateX(0)'
+					}
+				},
+				'mobile-menu-out': {
+					'0%': {
+						transform: 'translateX(0)'
+					},
+					'100%': {
+						transform: 'translateX(-100%)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'float': 'float 3s ease-in-out infinite',
-				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'scale-in': 'scale-in 0.2s ease-out',
+				'fade-slide-in': 'fade-slide-in 0.3s ease-out',
+				'mobile-menu-in': 'mobile-menu-in 0.3s ease-out',
+				'mobile-menu-out': 'mobile-menu-out 0.3s ease-in'
 			}
 		}
 	},
