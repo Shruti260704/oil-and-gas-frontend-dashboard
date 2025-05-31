@@ -1,5 +1,5 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChartLine, ChartBar, ChartColumn, ChartPie } from "lucide-react";
@@ -19,24 +19,43 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
+const API_BASE_URL = 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
+
 const DataVisualizer = ({ file }: { file: FileData }) => {
-  const { data, summary } = file.content;
-  
-  // Get all keys from data object to determine available metrics
-  const dataKeys = Object.keys(data || {});
-  
-  // Define chart colors
+  const [metrics, setMetrics] = useState<any>(null);
+  const [summary, setSummary] = useState<string>('Loading...');
+
+  useEffect(() => {
+    if (!file) return;
+
+    // Example: Fetch metrics from backend (replace '/metrics' with your actual endpoint)
+    axios.post(`${API_BASE_URL}/metrics`, { fileId: file.id })
+      .then(res => setMetrics(res.data))
+      .catch(() => setMetrics(null));
+
+    // Optionally, fetch summary if not already available
+    axios.post(`${API_BASE_URL}/query`, {
+      query: 'Give me a summary of this file',
+      fileId: file.id,
+      top_k: 5,
+    })
+      .then(res => setSummary(res.data.answer || 'No summary available'))
+      .catch(() => setSummary('No summary available'));
+  }, [file]);
+
+  // Defensive checks
+  const data = metrics?.data || {};
+  const dataKeys = Object.keys(data);
+
+  // Chart color palette
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-  
+
   // Transform data for charts
   const transformDataForLineAndBar = () => {
     if (!data || dataKeys.length === 0) return [];
-    
-    // Get the first data array to determine the number of data points
     const firstDataArray = data[dataKeys[0]];
     if (!Array.isArray(firstDataArray)) return [];
-    
-    return firstDataArray.map((_, index) => {
+    return firstDataArray.map((_: any, index: number) => {
       const dataPoint: any = { index };
       dataKeys.forEach(key => {
         if (Array.isArray(data[key])) {
@@ -46,17 +65,14 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
       return dataPoint;
     });
   };
-  
+
   const transformDataForPie = () => {
     if (!data || dataKeys.length === 0) return [];
-    
-    // Use the last value of each data array for the pie chart
     return dataKeys.map((key, index) => {
       const dataArray = data[key];
       const value = Array.isArray(dataArray) 
         ? dataArray[dataArray.length - 1] 
         : 0;
-      
       return {
         name: key,
         value,
@@ -64,41 +80,31 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
       };
     });
   };
-  
+
   const lineData = transformDataForLineAndBar();
   const barData = transformDataForLineAndBar();
   const pieData = transformDataForPie();
-  
-  // Helper function to format label names safely
+
+  // Helper functions for labels
   const formatName = (name: string | number): string => {
     if (typeof name === 'string') {
       return name.length > 12 ? `${name.substring(0, 12)}...` : name;
     }
     return String(name);
   };
-  
-  // Even more aggressive label shortening for pie chart to prevent overlap
   const formatPieLabel = (name: string | number): string => {
     if (typeof name === 'string') {
       return name.length > 5 ? `${name.substring(0, 5)}...` : name;
     }
     return String(name);
   };
-
-  // Custom pie chart label renderer to prevent overlapping
   const renderCustomizedPieLabel = (props: any) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, index } = props;
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name } = props;
     const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
     const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
     const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-    
-    // Only show label for segments with sufficient percentage
-    if (percent < 25) return null;
-    
-    const displayName = typeof name === 'string' 
-      ? formatPieLabel(name)
-      : String(name);
-      
+    if (percent < 0.25) return null;
+    const displayName = typeof name === 'string' ? formatPieLabel(name) : String(name);
     return (
       <text 
         x={x} 
@@ -112,11 +118,10 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
       </text>
     );
   };
-  
+
   return (
     <div>
       <p className="text-gray-600 mb-6 break-words">{summary}</p>
-      
       {dataKeys.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-gray-500">No visualization data available for this file</p>
@@ -162,7 +167,6 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
               </div>
             </CardContent>
           </Card>
-          
           {/* Bar Chart */}
           <Card>
             <CardContent className="p-4">
@@ -200,7 +204,6 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
               </div>
             </CardContent>
           </Card>
-          
           {/* Pie Chart */}
           <Card>
             <CardContent className="p-4">
@@ -226,19 +229,10 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value, name) => {
-                        // Show full name in tooltip for reference
-                        return [value, name];
-                      }}
+                      formatter={(value, name) => [value, name]}
                     />
                     <Legend 
-                      formatter={(value) => {
-                        // Use more aggressive shortening for legend items
-                        if (typeof value === 'string') {
-                          return formatPieLabel(value);
-                        }
-                        return String(value);
-                      }}
+                      formatter={(value) => typeof value === 'string' ? formatPieLabel(value) : String(value)}
                       wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} 
                       layout="horizontal"
                       align="center"
@@ -249,7 +243,6 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
               </div>
             </CardContent>
           </Card>
-          
           {/* Stacked Column Chart */}
           <Card>
             <CardContent className="p-4">

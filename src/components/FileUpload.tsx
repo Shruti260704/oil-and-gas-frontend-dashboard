@@ -1,32 +1,38 @@
-
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useRef } from 'react';
+import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileData, FileType } from '../types/files';
 import { toast } from "sonner";
-import { FileText, File, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
+
+const API_BASE_URL = 'http://20.151.176.215:8000/api';
+// Maximum file size in bytes (e.g., 100MB)
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
-  
+
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
-  
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
-  
+
   const detectFileType = (fileName: string): FileType => {
     const extension = fileName.split('.').pop()?.toLowerCase() || '';
     if (extension === 'pdf') return 'pdf';
@@ -36,127 +42,96 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
     return 'other';
   };
 
-  const getFileIcon = (fileType: FileType) => {
-    switch (fileType) {
-      case 'pdf':
-        return <File className="h-5 w-5 text-red-500" />;
-      case 'excel':
-        return <File className="h-5 w-5 text-green-600" />;
-      case 'csv':
-        return <FileText className="h-5 w-5 text-blue-500" />;
-      case 'powerpoint':
-        return <FileText className="h-5 w-5 text-orange-500" />;
-      default:
-        return <FileText className="h-5 w-5 text-gray-500" />;
+  const validateFile = (file: File): boolean => {
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+      return false;
     }
+    return true;
   };
-  
-  const processFile = (file: File) => {
+
+  const handleFileUpload = async (file: File) => {
+    if (!validateFile(file)) {
+      return;
+    }
+
     setIsProcessing(true);
-    
-    // Mock processing of the file - in a real app, this would involve parsing
-    const fileType = detectFileType(file.name);
-    
-    // Generate some mock data based on file type
-    setTimeout(() => {
-      const mockData: FileData = {
-        id: `file-${Date.now()}`,
+    setUploadProgress(0);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/documents`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+          timeout: 0, // Infinite timeout, request kabhi timeout nahi hogi
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(percent);
+            }
+          }
+        }
+      );
+
+      const fileType = detectFileType(file.name);
+      const fileData: FileData = {
+        id: response.data.id, // backend se id aa rahi hai
         name: file.name,
         type: fileType,
         size: file.size,
         dateUploaded: new Date(),
-        content: generateMockContent(fileType),
+        content: {
+          topics: [],
+          summary: null,
+          data: null
+        }
       };
+
+      onFileUpload(fileData);
+      toast.success(`File "${file.name}" uploaded successfully`);
+    } catch (error: any) {
+      console.error("Upload error:", error);
       
-      onFileUpload(mockData);
+      if (axios.isCancel(error)) {
+        toast.error("Upload was cancelled");
+      } else if (error.code === "ECONNABORTED") {
+        toast.error("Upload timed out. Please try with a smaller file or check your connection.");
+      } else if (error.response) {
+        // Server responded with an error status
+        toast.error(`Upload failed: ${error.response.data?.detail || error.response.status}`);
+      } else if (error.request) {
+        // Request was made but no response received
+        toast.error("No response from server. Please try again later.");
+      } else {
+        toast.error("Failed to upload file: " + (error.message || "Unknown error"));
+      }
+    } finally {
       setIsProcessing(false);
-    }, 1500);
-  };
-  
-  const generateMockContent = (fileType: FileType) => {
-    // Generate mock content based on file type
-    switch (fileType) {
-      case 'pdf':
-        return {
-          topics: ['Drilling Operations', 'Reservoir Analysis', 'Safety Protocols'],
-          summary: 'This document covers drilling procedures and safety protocols for offshore operations.',
-          data: {
-            drillingDepth: [1000, 1500, 2000, 2500, 3000],
-            pressure: [200, 250, 300, 350, 400],
-            temperature: [50, 60, 70, 80, 90],
-            // Adding location data to all file types
-            lat: [29.7604, 31.9973, 48.15, 30.2672, 32.7555],
-            lng: [-95.3698, -102.0779, -103.5, -97.7431, -97.3308],
-            names: ["Houston Field", "Midland Basin", "Bakken Site", "Austin Complex", "Dallas Platform"]
-          }
-        };
-      case 'excel':
-      case 'csv':
-        return {
-          topics: ['Production Data', 'Well Performance', 'Cost Analysis'],
-          summary: 'Monthly production metrics across multiple wells with associated costs and performance indicators.',
-          data: {
-            production: [5000, 5200, 4800, 5100, 5300],
-            costs: [15000, 14500, 16000, 15500, 14800],
-            efficiency: [0.92, 0.94, 0.91, 0.93, 0.95],
-            // Location data for maps
-            locations: [
-              { name: "Gulf Platform Alpha", lat: 28.5383, lng: -89.7824, value: 723 },
-              { name: "Permian Basin Site 1", lat: 31.5, lng: -103, value: 845 },
-              { name: "Eagle Ford Well 12", lat: 28.3, lng: -99.2, value: 512 },
-              { name: "Oklahoma Field 7", lat: 35.4, lng: -97.5, value: 678 },
-              { name: "Wyoming Gas Site", lat: 42.8, lng: -108.7, value: 420 }
-            ]
-          }
-        };
-      case 'powerpoint':
-        return {
-          topics: ['Quarterly Results', 'New Projects', 'Market Analysis'],
-          summary: 'Presentation on quarterly business performance and upcoming exploration projects.',
-          data: {
-            revenue: [2.1, 2.3, 2.0, 2.4],
-            expenses: [1.5, 1.6, 1.7, 1.5],
-            profits: [0.6, 0.7, 0.3, 0.9],
-            // Map coordinates for project locations
-            coordinates: [
-              [29.7604, -95.3698], // Houston
-              [31.9973, -102.0779], // Midland
-              [47.5, -101.5], // North Dakota
-              [57.05, -111.58], // Alberta Oil Sands
-              [19.4, -99.1]  // Mexico City
-            ]
-          }
-        };
-      default:
-        return {
-          topics: ['General Information'],
-          summary: 'Generic file content.',
-          data: {
-            values: [10, 20, 30, 40, 50],
-            // Basic location data
-            lat: [29.7604, 31.9973],
-            lng: [-95.3698, -102.0779],
-            names: ["Location A", "Location B"]
-          }
-        };
+      setUploadProgress(0);
+      if (inputRef.current) inputRef.current.value = '';
     }
   };
-  
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      processFile(file);
+      handleFileUpload(file);
     }
   };
-  
+
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      processFile(file);
+      handleFileUpload(file);
+      e.target.value = '';
     }
   };
 
@@ -173,37 +148,60 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
           <div className={`rounded-full p-3 mb-4 ${isProcessing ? 'bg-blue-100 animate-pulse' : 'bg-blue-100'}`}>
             <Upload className="h-10 w-10 text-blue-500" />
           </div>
-          
           <p className="text-sm font-medium">
             {isProcessing ? 'Processing file...' : 'Drag & Drop files here'}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             Supports PDF, Excel, PowerPoint, CSV
           </p>
-          
+          {isProcessing && (
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-2 rounded shadow z-50">
+              Processing... This may take a while for large files. Please do not refresh or close the window.
+            </div>
+          )}
           <div className="mt-4">
             <label htmlFor="file-upload" className="cursor-pointer">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="relative shadow-sm hover:shadow-md transition-shadow"
                 disabled={isProcessing}
               >
-                <span>{isProcessing ? 'Processing...' : 'Browse Files'}</span>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={handleFileInput}
-                  accept=".pdf,.xls,.xlsx,.ppt,.pptx,.csv"
-                  disabled={isProcessing}
-                />
+                {isProcessing ? (
+                  <span className="w-full text-center">Processing...</span>
+                ) : (
+                  <span className="w-full text-center">Browse Files</span>
+                )}
+                {!isProcessing && (
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    ref={inputRef}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={handleFileInput}
+                    accept=".pdf,.xls,.xlsx,.ppt,.pptx,.csv"
+                    disabled={isProcessing}
+                  />
+                )}
               </Button>
             </label>
+            {/* Progress bar and percentage */}
+            {isProcessing && (
+              <div className="w-full mt-3">
+                <div className="w-full bg-blue-100 rounded-full h-2.5">
+                  <div
+                    className="bg-blue-500 h-2.5 rounded-full transition-all duration-200"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <div className="text-xs text-blue-700 mt-1 text-center">
+                  Uploading: {uploadProgress}%
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 };
-
 export default FileUpload;

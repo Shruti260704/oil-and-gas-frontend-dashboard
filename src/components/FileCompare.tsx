@@ -1,10 +1,12 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FileText } from "lucide-react";
+
+const API_BASE_URL = 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
 
 interface FileCompareProps {
   files: FileData[];
@@ -13,7 +15,9 @@ interface FileCompareProps {
 }
 
 const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompareProps) => {
-  // If we're in selection mode (onToggleSelection provided), show file selection UI
+  const [comparison, setComparison] = useState<any>(null);
+
+  // Selection UI (unchanged)
   if (onToggleSelection && files.length > 0 && selectedFiles.length < 2) {
     return (
       <div>
@@ -23,7 +27,6 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
             Select two files to compare. {selectedFiles.length === 1 && "You've selected 1 file."}
           </p>
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {files.map(file => (
             <Card 
@@ -52,7 +55,7 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
       </div>
     );
   }
-  
+
   if (files.length !== 2) {
     return (
       <div className="text-center py-10">
@@ -62,62 +65,32 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
   }
 
   const [file1, file2] = files;
-  
-  // Function to compare file content
-  const compareContent = () => {
-    // Compare topics
-    const uniqueTopics = new Set([
-      ...(file1.content.topics || []),
-      ...(file2.content.topics || [])
-    ]);
-    
-    const topicComparison = Array.from(uniqueTopics).map(topic => ({
-      topic,
-      inFile1: file1.content.topics.includes(topic),
-      inFile2: file2.content.topics.includes(topic),
-    }));
-    
-    return { topicComparison };
-  };
-  
-  // Function to get common data keys that exist in both files
-  const getCommonDataKeys = () => {
-    if (!file1.content.data || !file2.content.data) return [];
-    
-    const keys1 = Object.keys(file1.content.data);
-    const keys2 = Object.keys(file2.content.data);
-    
-    return keys1.filter(key => keys2.includes(key));
-  };
-  
-  // Prepare comparison data
-  const { topicComparison } = compareContent();
-  const commonDataKeys = getCommonDataKeys();
-  
-  // Prepare chart data for comparison
-  const prepareChartData = (key: string) => {
-    if (!file1.content.data?.[key] || !file2.content.data?.[key]) return [];
-    
-    const data1 = file1.content.data[key];
-    const data2 = file2.content.data[key];
-    
-    if (!Array.isArray(data1) || !Array.isArray(data2)) return [];
-    
-    // Create comparison data points
-    const maxLength = Math.max(data1.length, data2.length);
-    const chartData = [];
-    
-    for (let i = 0; i < maxLength; i++) {
-      chartData.push({
-        index: i,
-        [file1.name]: data1[i] !== undefined ? data1[i] : null,
-        [file2.name]: data2[i] !== undefined ? data2[i] : null,
-      });
-    }
-    
-    return chartData;
-  };
-  
+
+  // Fetch comparison from backend when files change
+  useEffect(() => {
+    if (!file1 || !file2) return;
+    setComparison(null); // reset while loading
+
+    axios.post(`${API_BASE_URL}/compare`, {
+      file1Id: file1.id,
+      file2Id: file2.id
+    })
+      .then(res => setComparison(res.data))
+      .catch(() => setComparison(null));
+  }, [file1, file2]);
+
+  // Defensive fallback if backend not ready
+  if (!comparison) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-500">Loading comparison...</p>
+      </div>
+    );
+  }
+
+  // Assume backend returns:
+  // { topicComparison: [{topic, inFile1, inFile2}], commonDataKeys: [key, ...], chartData: { [key]: [{index, file1: val, file2: val}, ...] } }
+
   return (
     <div>
       <div className="bg-blue-50 p-4 rounded-lg mb-6 flex items-center">
@@ -126,7 +99,7 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
           Comparing <span className="font-semibold">{file1.name}</span> with <span className="font-semibold">{file2.name}</span>
         </p>
       </div>
-      
+
       {/* Basic file information comparison */}
       <Card className="mb-6">
         <CardContent className="p-4">
@@ -159,7 +132,7 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Topic comparison */}
       <Card className="mb-6">
         <CardContent className="p-4">
@@ -173,7 +146,7 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
               </TableRow>
             </TableHeader>
             <TableBody>
-              {topicComparison.map((item, index) => (
+              {comparison.topicComparison.map((item: any, index: number) => (
                 <TableRow key={index}>
                   <TableCell>{item.topic}</TableCell>
                   <TableCell>
@@ -204,18 +177,18 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Data comparison charts */}
-      {commonDataKeys.length > 0 ? (
+      {comparison.commonDataKeys.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {commonDataKeys.map(key => (
+          {comparison.commonDataKeys.map((key: string) => (
             <Card key={key}>
               <CardContent className="p-4">
                 <h3 className="font-medium mb-4">Comparison: {key}</h3>
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={prepareChartData(key)}
+                      data={comparison.chartData[key]}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
@@ -225,14 +198,16 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
                       <Legend />
                       <Line 
                         type="monotone" 
-                        dataKey={file1.name} 
+                        dataKey="file1" 
                         stroke="#8884d8" 
                         activeDot={{ r: 8 }}
+                        name={file1.name}
                       />
                       <Line 
                         type="monotone" 
-                        dataKey={file2.name} 
+                        dataKey="file2" 
                         stroke="#82ca9d" 
+                        name={file2.name}
                       />
                     </LineChart>
                   </ResponsiveContainer>

@@ -1,7 +1,6 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import { Icon, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Define the structure of our location data
@@ -31,15 +30,14 @@ const customIcon = new Icon({
 // Component to automatically fit bounds to markers
 function SetBoundsToMarkers({ locations }: { locations: LocationData[] }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (locations.length > 0) {
-      const bounds = locations.map(loc => [loc.lat, loc.lng]);
-      // Fix: Pass the bounds array with the correct type annotation
-      map.fitBounds(bounds as [number, number][]);
+      const bounds: LatLngExpression[] = locations.map(loc => [loc.lat, loc.lng]);
+      map.fitBounds(bounds);
     }
   }, [locations, map]);
-  
+
   return null;
 }
 
@@ -50,7 +48,6 @@ const MapComponent = ({ locations, height = '600px' }: MapComponentProps) => {
   // Update map center when locations change
   useEffect(() => {
     if (locations.length > 0) {
-      // Calculate average lat and lng for center
       const avgLat = locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length;
       const avgLng = locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length;
       setMapCenter([avgLat, avgLng]);
@@ -58,37 +55,45 @@ const MapComponent = ({ locations, height = '600px' }: MapComponentProps) => {
     }
   }, [locations]);
 
-  // Create marker elements for each location
-  const markers = locations.map((location, index) => (
-    <Marker
-      key={`${location.name}-${index}`}
-      position={[location.lat, location.lng]}
-      icon={customIcon}
-    >
-      <Popup>
-        <div className="p-2">
-          <h3 className="font-bold text-md">{location.name}</h3>
-          <p className="mt-1">Value: <span className="font-semibold">{location.value}</span></p>
-        </div>
-      </Popup>
-    </Marker>
-  ));
+  // Memoize markers for performance
+  const markers = useMemo(() =>
+    locations.map((location, index) => (
+      <Marker
+        key={`${location.name}-${index}`}
+        position={[location.lat, location.lng]}
+        icon={customIcon}
+      >
+        <Popup>
+          <div className="p-2">
+            <h3 className="font-bold text-md">{location.name}</h3>
+            <p className="mt-1">Value: <span className="font-semibold">{location.value}</span></p>
+          </div>
+        </Popup>
+      </Marker>
+    )), [locations]
+  );
 
   return (
     <div style={{ height }} className="w-full rounded-lg overflow-hidden border border-blue-800/40 shadow-lg">
-      <MapContainer
-        center={mapCenter}
-        zoom={zoom}
-        style={{ height: '100%', width: '100%' }}
-        className="z-10"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {markers}
-        <SetBoundsToMarkers locations={locations} />
-      </MapContainer>
+      {locations.length === 0 ? (
+        <div className="flex items-center justify-center h-full text-gray-400">
+          No locations to display.
+        </div>
+      ) : (
+        <MapContainer
+          center={mapCenter}
+          zoom={zoom}
+          style={{ height: '100%', width: '100%' }}
+          className="z-10"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {markers}
+          <SetBoundsToMarkers locations={locations} />
+        </MapContainer>
+      )}
     </div>
   );
 };
