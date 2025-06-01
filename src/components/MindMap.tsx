@@ -253,6 +253,7 @@ const MindMap = ({ file }: { file: FileData }) => {
   // Get visible edges based on visible nodes
   const getVisibleEdges = (visibleNodes: MindMapNode[]) => {
     const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
+    // Make sure all edges between visible nodes are included
     return edges.filter(edge =>
       visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
     );
@@ -455,14 +456,16 @@ const MindMap = ({ file }: { file: FileData }) => {
     // Compare only nodes that have changed to avoid full redraws
     const changedNodeIds = new Set<string>();
     const toggledNodeIds = new Set<string>();
+    const newlyVisibleNodeIds = new Set<string>();
 
-    // First pass: find nodes that were toggled (collapsed/expanded)
+    // First pass: find nodes that weren't visible before (new nodes)
     d3Nodes.forEach(node => {
       // Check if the node exists in the previous map
       const prevPos = prevNodePositions.get(node.data.id);
       if (!prevPos) {
-        // New node
+        // New node that wasn't visible before
         changedNodeIds.add(node.data.id);
+        newlyVisibleNodeIds.add(node.data.id);
         return;
       }
     });
@@ -492,6 +495,30 @@ const MindMap = ({ file }: { file: FileData }) => {
         node.descendants().forEach(desc => {
           changedNodeIds.add(desc.data.id);
         });
+      }
+    });
+
+    // Get all edges based on the hierarchy to ensure completeness
+    // This ensures all connections in the hierarchy are represented
+    const hierarchyEdges = d3Links.map(link => {
+      const source = link.source as D3Node;
+      const target = link.target as D3Node;
+      return {
+        source: source.data.id,
+        target: target.data.id,
+        relation: 'hierarchical'
+      } as MindMapEdge;
+    });
+
+    // Combine with visible edges and remove duplicates
+    const allVisibleEdges = [...visibleEdges];
+
+    // Add any missing edges from the hierarchy
+    hierarchyEdges.forEach(hierarchyEdge => {
+      if (!allVisibleEdges.some(edge =>
+        edge.source === hierarchyEdge.source && edge.target === hierarchyEdge.target
+      )) {
+        allVisibleEdges.push(hierarchyEdge);
       }
     });
 
