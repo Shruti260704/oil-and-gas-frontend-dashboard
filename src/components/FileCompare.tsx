@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FileText } from "lucide-react";
 
-const API_BASE_URL = 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
 
 interface FileCompareProps {
   files: FileData[];
@@ -29,13 +29,12 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {files.map(file => (
-            <Card 
-              key={file.id} 
-              className={`cursor-pointer transition-all ${
-                selectedFiles.some(f => f.id === file.id) 
-                  ? 'ring-2 ring-blue-500 shadow-lg' 
-                  : 'hover:shadow-md'
-              }`}
+            <Card
+              key={file.id}
+              className={`cursor-pointer transition-all ${selectedFiles.some(f => f.id === file.id)
+                ? 'ring-2 ring-blue-500 shadow-lg'
+                : 'hover:shadow-md'
+                }`}
               onClick={() => onToggleSelection(file)}
             >
               <CardContent className="p-4">
@@ -196,17 +195,17 @@ const FileCompare = ({ files, selectedFiles = [], onToggleSelection }: FileCompa
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="file1" 
-                        stroke="#8884d8" 
+                      <Line
+                        type="monotone"
+                        dataKey="file1"
+                        stroke="#8884d8"
                         activeDot={{ r: 8 }}
                         name={file1.name}
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="file2" 
-                        stroke="#82ca9d" 
+                      <Line
+                        type="monotone"
+                        dataKey="file2"
+                        stroke="#82ca9d"
                         name={file2.name}
                       />
                     </LineChart>

@@ -11,7 +11,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const API_BASE_URL = 'http://20.151.176.215:8000/api';
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://20.151.176.215:8000/api';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -38,20 +38,20 @@ const InsightPanel = ({ file }: { file: FileData }) => {
     // Handler for the custom event
     const handleAddQuery = (event: any) => {
       const { query } = event.detail;
-      
+
       if (query && typeof query === 'string') {
         setQueryInput(query);
         // Optionally auto-submit
         handleSubmitQuery(query);
       }
     };
-    
+
     // Check localStorage on component mount
     const checkLocalStorage = () => {
       try {
         const pendingQuery = localStorage.getItem('pendingQuery');
         const pendingFileId = localStorage.getItem('pendingFileId');
-        
+
         if (pendingQuery && pendingFileId === file.id) {
           setQueryInput(pendingQuery);
           handleSubmitQuery(pendingQuery);
@@ -63,13 +63,13 @@ const InsightPanel = ({ file }: { file: FileData }) => {
         console.error('Error reading from localStorage:', err);
       }
     };
-    
+
     // Add event listener
     window.addEventListener('addQuery', handleAddQuery);
-    
+
     // Check localStorage
     checkLocalStorage();
-    
+
     // Clean up
     return () => {
       window.removeEventListener('addQuery', handleAddQuery);
@@ -79,7 +79,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
   // Separate function to submit a query programmatically
   const handleSubmitQuery = async (query: string) => {
     if (!query.trim()) return;
-    
+
     setIsLoading(true);
     try {
       const res = await axios.post(`${API_BASE_URL}/query`, {
@@ -121,7 +121,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
           images
         }
       ]);
-      
+
       // Clear input only if it matches the submitted query
       if (queryInput === query) {
         setQueryInput('');
@@ -135,7 +135,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
       setIsLoading(false);
     }
   };
-  
+
   // Modify the form submit handler to use the common function
   const handleQuerySubmit = async (e: React.FormEvent) => {
     e.preventDefault();

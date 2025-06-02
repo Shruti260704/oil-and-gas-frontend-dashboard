@@ -10,7 +10,7 @@ interface CSVUploaderProps {
   onDataUploaded: (data: LocationData[]) => void;
 }
 
-const API_BASE_URL = 'http://20.151.176.215:8000/api'; // <-- Bas yahan apna backend URL dijiye
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://20.151.176.215:8000/api'; // <-- Bas yahan apna backend URL dijiye
 
 const CSVUploader = ({ onDataUploaded }: CSVUploaderProps) => {
   const [isDragging, setIsDragging] = useState(false);

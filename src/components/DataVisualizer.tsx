@@ -3,23 +3,23 @@ import axios from 'axios';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChartLine, ChartBar, ChartColumn, ChartPie } from "lucide-react";
-import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
   Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
 } from 'recharts';
 
-const API_BASE_URL = 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
 
 const DataVisualizer = ({ file }: { file: FileData }) => {
   const [metrics, setMetrics] = useState<any>(null);
@@ -70,8 +70,8 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
     if (!data || dataKeys.length === 0) return [];
     return dataKeys.map((key, index) => {
       const dataArray = data[key];
-      const value = Array.isArray(dataArray) 
-        ? dataArray[dataArray.length - 1] 
+      const value = Array.isArray(dataArray)
+        ? dataArray[dataArray.length - 1]
         : 0;
       return {
         name: key,
@@ -106,11 +106,11 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
     if (percent < 0.25) return null;
     const displayName = typeof name === 'string' ? formatPieLabel(name) : String(name);
     return (
-      <text 
-        x={x} 
-        y={y} 
+      <text
+        x={x}
+        y={y}
         fill="#888"
-        textAnchor={x > cx ? 'start' : 'end'} 
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         fontSize={10}
       >
@@ -142,8 +142,8 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                     margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="index" 
+                    <XAxis
+                      dataKey="index"
                       tick={{ fontSize: 12 }}
                       height={60}
                       angle={-45}
@@ -153,11 +153,11 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                     <Tooltip />
                     <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
-                      <Line 
+                      <Line
                         key={key}
-                        type="monotone" 
-                        dataKey={key} 
-                        stroke={COLORS[index % COLORS.length]} 
+                        type="monotone"
+                        dataKey={key}
+                        stroke={COLORS[index % COLORS.length]}
                         activeDot={{ r: 8 }}
                         name={formatName(key)}
                       />
@@ -181,8 +181,8 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                     margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="index" 
+                    <XAxis
+                      dataKey="index"
                       tick={{ fontSize: 12 }}
                       height={60}
                       angle={-45}
@@ -192,10 +192,10 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                     <Tooltip />
                     <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
-                      <Bar 
-                        key={key} 
-                        dataKey={key} 
-                        fill={COLORS[index % COLORS.length]} 
+                      <Bar
+                        key={key}
+                        dataKey={key}
+                        fill={COLORS[index % COLORS.length]}
                         name={formatName(key)}
                       />
                     ))}
@@ -228,12 +228,12 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value, name) => [value, name]}
                     />
-                    <Legend 
+                    <Legend
                       formatter={(value) => typeof value === 'string' ? formatPieLabel(value) : String(value)}
-                      wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} 
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }}
                       layout="horizontal"
                       align="center"
                       verticalAlign="bottom"
@@ -257,8 +257,8 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                     margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="index" 
+                    <XAxis
+                      dataKey="index"
                       tick={{ fontSize: 12 }}
                       height={60}
                       angle={-45}
@@ -268,11 +268,11 @@ const DataVisualizer = ({ file }: { file: FileData }) => {
                     <Tooltip />
                     <Legend wrapperStyle={{ paddingTop: 10 }} />
                     {dataKeys.map((key, index) => (
-                      <Bar 
-                        key={key} 
-                        dataKey={key} 
+                      <Bar
+                        key={key}
+                        dataKey={key}
                         stackId="a"
-                        fill={COLORS[index % COLORS.length]} 
+                        fill={COLORS[index % COLORS.length]}
                         name={formatName(key)}
                       />
                     ))}

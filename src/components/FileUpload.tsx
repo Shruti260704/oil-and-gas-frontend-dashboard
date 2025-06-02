@@ -6,7 +6,7 @@ import { FileData, FileType } from '../types/files';
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 
-const API_BASE_URL = 'http://20.151.176.215:8000/api';
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://20.151.176.215:8000/api';
 // Maximum file size in bytes (e.g., 100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -95,7 +95,7 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
       toast.success(`File "${file.name}" uploaded successfully`);
     } catch (error: any) {
       console.error("Upload error:", error);
-      
+
       if (axios.isCancel(error)) {
         toast.error("Upload was cancelled");
       } else if (error.code === "ECONNABORTED") {
