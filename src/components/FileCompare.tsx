@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FileText } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://20.151.176.215:8000/api'; // <-- Set your backend URL here
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'https://20.151.176.215:8000/api'; // <-- Set your backend URL here
 
 interface FileCompareProps {
   files: FileData[];
