@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import * as d3 from 'd3';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'https://20.151.176.215:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api';
 
 type MindMapNode = {
   id: string;

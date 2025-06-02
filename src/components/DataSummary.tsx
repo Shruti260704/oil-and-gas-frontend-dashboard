@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FileText } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'https://20.151.176.215:8000/api'; // <-- Set your backend URL here
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api'; // <-- Set your backend URL here
 
 const DataSummary = ({ file }: { file: FileData }) => {
   const [summary, setSummary] = useState<string>('Loading...');

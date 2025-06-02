@@ -19,7 +19,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'https://20.151.176.215:8000/api'; // <-- Set your backend URL here
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api'; // <-- Set your backend URL here
 
 const DataVisualizer = ({ file }: { file: FileData }) => {
   const [metrics, setMetrics] = useState<any>(null);

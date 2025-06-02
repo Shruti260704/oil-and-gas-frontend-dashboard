@@ -11,7 +11,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'https://20.151.176.215:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 

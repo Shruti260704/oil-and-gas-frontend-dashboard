@@ -6,7 +6,7 @@ import { FileData, FileType } from '../types/files';
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'https://20.151.176.215:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api';
 // Maximum file size in bytes (e.g., 100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
