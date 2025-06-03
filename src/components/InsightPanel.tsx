@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../lib/axios';
 import { FileData } from '../types/files';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,6 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -82,7 +80,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
 
     setIsLoading(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/query`, {
+      const res = await axios.post(`/query`, {
         query: query,
         top_k: 100,
         include_images: includeImages,
@@ -307,7 +305,7 @@ const InsightPanel = ({ file }: { file: FileData }) => {
     setReviewStars(prev => ({ ...prev, [idx]: rating }));
     setReviewLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/review`, {
+      await axios.post(`/review`, {
         query: chat[idx].query,
         answer: chat[idx].answer,
         rating,

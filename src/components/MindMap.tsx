@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import axios from '../lib/axios';
 import { FileData } from '../types/files';
 import { Network, X, ZoomIn, ZoomOut, Move, ChevronRight, ChevronLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import * as d3 from 'd3';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api';
 
 type MindMapNode = {
   id: string;
@@ -130,7 +128,7 @@ const MindMap = ({ file }: { file: FileData }) => {
 
       // If cache is empty or refresh is forced, fetch from backend
       setRefreshing(forceRefresh);
-      const res = await axios.post(`${API_BASE_URL}/mindmap`, {
+      const res = await axios.post(`/mindmap`, {
         fileId: file.id,
       });
 
@@ -278,9 +276,8 @@ const MindMap = ({ file }: { file: FileData }) => {
     }
 
     // Send the query to the backend directly
-    axios.post(`${API_BASE_URL}/query`, {
+    axios.post(`/query`, {
       query: query,
-      fileId: file.id,
       top_k: 100,
       include_images: false,
     }).catch(err => console.error('Error sending query:', err));
@@ -453,7 +450,6 @@ const MindMap = ({ file }: { file: FileData }) => {
       .attr('stop-color', '#3b82f6');
 
     // Track which nodes are new or repositioned
-    // Compare only nodes that have changed to avoid full redraws
     const changedNodeIds = new Set<string>();
     const toggledNodeIds = new Set<string>();
     const newlyVisibleNodeIds = new Set<string>();
@@ -498,29 +494,36 @@ const MindMap = ({ file }: { file: FileData }) => {
       }
     });
 
-    // Get all edges based on the hierarchy to ensure completeness
-    // This ensures all connections in the hierarchy are represented
-    const hierarchyEdges = d3Links.map(link => {
-      const source = link.source as D3Node;
-      const target = link.target as D3Node;
-      return {
-        source: source.data.id,
-        target: target.data.id,
-        relation: 'hierarchical'
-      } as MindMapEdge;
+    // Create a map of node IDs to their D3 nodes for easier access
+    const d3NodeMap = new Map<string, d3.HierarchyNode<MindMapNode>>();
+    d3Nodes.forEach(node => {
+      d3NodeMap.set(node.data.id, node);
     });
 
-    // Combine with visible edges and remove duplicates
-    const allVisibleEdges = [...visibleEdges];
+    // Make sure all hierarchy edges are included by extracting them from d3Links
+    const visibleEdgeSet = new Set<string>();
+    visibleEdges.forEach(edge => {
+      visibleEdgeSet.add(`${edge.source}-${edge.target}`);
+    });
 
-    // Add any missing edges from the hierarchy
-    hierarchyEdges.forEach(hierarchyEdge => {
-      if (!allVisibleEdges.some(edge =>
-        edge.source === hierarchyEdge.source && edge.target === hierarchyEdge.target
-      )) {
-        allVisibleEdges.push(hierarchyEdge);
+    // Add missing hierarchy edges
+    const additionalEdges: MindMapEdge[] = [];
+    d3Links.forEach(link => {
+      const source = (link.source as D3Node).data.id;
+      const target = (link.target as D3Node).data.id;
+      const edgeKey = `${source}-${target}`;
+
+      if (!visibleEdgeSet.has(edgeKey)) {
+        additionalEdges.push({
+          source,
+          target,
+          relation: 'hierarchy'
+        });
       }
     });
+
+    // Combine all edges
+    const allVisibleEdges = [...visibleEdges, ...additionalEdges];
 
     // Draw links - ensuring all visible edges are rendered
     const links = g.append('g')

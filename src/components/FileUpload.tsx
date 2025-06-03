@@ -1,12 +1,11 @@
 import React, { useState, ChangeEvent, useRef } from 'react';
-import axios from 'axios';
+import axios from '../lib/axios';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileData, FileType } from '../types/files';
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://20.151.176.215:8000/api';
 // Maximum file size in bytes (e.g., 100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -62,13 +61,13 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/documents`,
+        `/documents`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
           timeout: 0, // Infinite timeout, request kabhi timeout nahi hogi
-          onUploadProgress: (progressEvent) => {
+          // Use the properly typed onUploadProgress
+          onUploadProgress: (progressEvent: any) => {
             if (progressEvent.total) {
               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
               setUploadProgress(percent);
@@ -94,21 +93,7 @@ const FileUpload = ({ onFileUpload }: { onFileUpload: (file: FileData) => void }
       onFileUpload(fileData);
       toast.success(`File "${file.name}" uploaded successfully`);
     } catch (error: any) {
-      console.error("Upload error:", error);
-
-      if (axios.isCancel(error)) {
-        toast.error("Upload was cancelled");
-      } else if (error.code === "ECONNABORTED") {
-        toast.error("Upload timed out. Please try with a smaller file or check your connection.");
-      } else if (error.response) {
-        // Server responded with an error status
-        toast.error(`Upload failed: ${error.response.data?.detail || error.response.status}`);
-      } else if (error.request) {
-        // Request was made but no response received
-        toast.error("No response from server. Please try again later.");
-      } else {
-        toast.error("Failed to upload file: " + (error.message || "Unknown error"));
-      }
+      toast.error("Failed to upload file: " + (error.message || "Unknown error"));
     } finally {
       setIsProcessing(false);
       setUploadProgress(0);
