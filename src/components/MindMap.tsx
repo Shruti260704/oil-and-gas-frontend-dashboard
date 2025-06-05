@@ -182,7 +182,96 @@ const MindMap = ({ file }: { file: FileData }) => {
 
     if (!svgRef.current) return;
 
-    // Toggle the collapsed state for the node
+    // Get the node's current state
+    const nodeToToggle = nodes.find(n => n.id === nodeId);
+    if (!nodeToToggle) return;
+
+    // If we're about to collapse (hide children), we need to animate the exit
+    if (!nodeToToggle.collapsed) {
+      // Find the node in the SVG
+      const nodeElement = svgRef.current.querySelector(`.collapse-arrow[data-node-id="${nodeId}"]`);
+      if (nodeElement) {
+        // Find all children nodes that will be hidden
+        const childrenIds = edges
+          .filter(e => e.source === nodeId)
+          .map(e => e.target);
+
+        // Get all descendant nodes (recursively)
+        const getAllDescendants = (nodeIds: string[]): string[] => {
+          if (nodeIds.length === 0) return [];
+
+          const childIds = edges
+            .filter(e => nodeIds.includes(e.source))
+            .map(e => e.target);
+
+          return [...nodeIds, ...getAllDescendants(childIds)];
+        };
+
+        const allDescendantIds = getAllDescendants(childrenIds);
+
+        // Animate all nodes that will be hidden to move to the parent position
+        const parentNode = d3.select(svgRef.current).select(`.node[data-node-id="${nodeId}"]`);
+        if (parentNode.node()) {
+          const parentTransform = parentNode.attr('transform');
+
+          // Select all descendant nodes
+          allDescendantIds.forEach(id => {
+            const descendantNode = d3.select(svgRef.current).select(`.node[data-node-id="${id}"]`);
+            if (descendantNode.node()) {
+              // First fade out text and scale down rectangle
+              descendantNode.select('text')
+                .transition()
+                .duration(300)
+                .style('opacity', 0);
+
+              descendantNode.select('rect')
+                .transition()
+                .duration(300)
+                .attr('transform', 'scale(0.8)');
+
+              // Then animate position to parent
+              descendantNode
+                .transition()
+                .delay(150)
+                .duration(400)
+                .attr('transform', parentTransform)
+                .style('opacity', 0);
+
+              // Also animate connected links
+              d3.select(svgRef.current).selectAll('.link')
+                .filter(function (d: any) {
+                  return d &&
+                    ((d.source && d.source.data && d.source.data.id === id) ||
+                      (d.target && d.target.data && d.target.data.id === id));
+                })
+                .transition()
+                .duration(350)
+                .style('opacity', 0);
+            }
+          });
+
+          // Wait for animation to complete before updating state
+          setTimeout(() => {
+            setNodes(currentNodes => currentNodes.map(node => {
+              if (node.id === nodeId) {
+                return { ...node, collapsed: !node.collapsed };
+              }
+              return node;
+            }));
+          }, 500);
+
+          // Update the arrow immediately for better UX
+          const arrowElement = svgRef.current.querySelector(`.collapse-arrow[data-node-id="${nodeId}"] path`);
+          if (arrowElement) {
+            arrowElement.setAttribute('d', 'M-4,-4 L4,0 L-4,4'); // Right arrow (collapsed)
+          }
+
+          return; // Early return - state update happens after animation
+        }
+      }
+    }
+
+    // For expanding or if we couldn't find elements for animation, just update state immediately
     setNodes(currentNodes => {
       const updatedNodes = currentNodes.map(node => {
         if (node.id === nodeId) {
@@ -375,10 +464,13 @@ const MindMap = ({ file }: { file: FileData }) => {
     // Create hierarchy data
     const hierarchy = d3.hierarchy(rootNode, node => getChildren(node.id));
 
-    // Create tree layout with increased spacing
+    // Create tree layout with basic spacing
     const treeLayout = d3.tree<MindMapNode>()
       .size([containerWidth - 100, containerHeight - 100])
-      .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5));
+      .separation((a, b) => {
+        // Standard separation function, will be refined later
+        return (a.parent === b.parent) ? 1.5 : 2;
+      });
 
     // Generate the tree data
     const treeData = treeLayout(hierarchy);
@@ -386,6 +478,120 @@ const MindMap = ({ file }: { file: FileData }) => {
     // Get nodes and links
     const d3Nodes = treeData.descendants();
     const d3Links = treeData.links();
+
+    // Helper function to calculate text width
+    const calculateTextWidth = (text: string, fontSize: number, isBold: boolean): number => {
+      // Create a temporary text element to measure text width
+      const tempText = document.createElement('span');
+      tempText.style.fontSize = `${fontSize}px`;
+      tempText.style.fontFamily = 'sans-serif';
+      tempText.style.position = 'absolute';
+      tempText.style.visibility = 'hidden';
+      tempText.style.whiteSpace = 'nowrap';
+      if (isBold) tempText.style.fontWeight = 'bold';
+      tempText.textContent = text;
+
+      document.body.appendChild(tempText);
+      const width = tempText.getBoundingClientRect().width;
+      document.body.removeChild(tempText);
+
+      return width;
+    };
+
+
+    // Calculate dynamic node dimensions for all nodes
+    const nodeWidths = new Map<string, number>();
+    const nodeHeights = new Map<string, number>();
+    const nodePadding = 25; // Minimum padding between nodes
+
+    d3Nodes.forEach(node => {
+      const label = node.data.label;
+      const level = node.data.level;
+      const fontSize = level === 0 ? 14 : 12;
+      const isBold = level === 0;
+
+      const textWidth = calculateTextWidth(label, fontSize, isBold);
+      const padding = 70; // Padding on both sides
+      const minWidth = level === 0 ? 180 : 140;
+
+      // Set width to the maximum of calculated width or minimum width
+      const nodeWidth = Math.max(textWidth + padding, minWidth);
+      nodeWidths.set(node.data.id, nodeWidth);
+
+      // Fixed height for all nodes
+      nodeHeights.set(node.data.id, 50);
+    });
+
+    // Post-process node positions to avoid overlaps
+    // First, we'll process nodes level by level, starting from the root
+    const nodesByLevel = new Map<number, d3.HierarchyNode<MindMapNode>[]>();
+
+    d3Nodes.forEach(node => {
+      if (!nodesByLevel.has(node.depth)) {
+        nodesByLevel.set(node.depth, []);
+      }
+      nodesByLevel.get(node.depth)?.push(node);
+    });
+
+    // Sort levels by depth
+    const levels = Array.from(nodesByLevel.keys()).sort();
+
+    // For each level, adjust nodes to prevent vertical overlapping
+    levels.forEach(level => {
+      if (level === 0) return; // Skip root level
+      const nodesAtLevel = nodesByLevel.get(level) || [];
+
+      // Sort nodes at this level by x position
+      nodesAtLevel.sort((a, b) => a.x - b.x);
+
+      // Calculate the max distance between nodes at this level and their parents
+      let maxWidthCurrent = Math.max(...nodesAtLevel.map(n => nodeWidths.get(n.data.id) || 0));
+      let maxWidthPrevious = Math.max(...(nodesByLevel.get(level - 1) || []).map(n => nodeWidths.get(n.data.id) || 0));
+      let centreDistance = nodesByLevel.get(level - 1)?.[0]?.y + (maxWidthPrevious / 2) + (maxWidthCurrent / 2) + nodePadding;
+
+      // Draw nodes at this distance
+      nodesAtLevel.forEach(node => {
+        // Calculate the new x position based on the previous node's position
+        node.y = centreDistance || node.y;
+      });
+    });
+
+    // Update link positions after node position adjustments
+    d3Links.forEach(link => {
+      // Just ensure links reference the updated node positions
+      // D3 will handle the rest when rendering
+    });
+
+    // Store node positions for smooth transitions
+    const nodeStartPositions = new Map<string, { x: number, y: number }>();
+
+    // Determine starting positions for all nodes
+    d3Nodes.forEach(node => {
+      const nodeId = node.data.id;
+
+      // First check if we have a previous position from the last render
+      const prevPos = prevNodePositions.get(nodeId);
+
+      if (prevPos) {
+        // If the node was visible before, start from its previous position
+        nodeStartPositions.set(nodeId, {
+          x: prevPos.x,
+          y: prevPos.y
+        });
+      } else if (node.parent) {
+        // If the node was hidden before, start from its parent's position
+        nodeStartPositions.set(nodeId, {
+          x: node.parent.x,
+          y: node.parent.y
+        });
+      } else {
+        // For root or nodes without previous positions, start from current position
+        nodeStartPositions.set(nodeId, {
+          x: node.x,
+          y: node.y
+        });
+      }
+    });
 
     // Create SVG container with zoom behavior
     const svg = d3.select(svgRef.current)
@@ -525,6 +731,25 @@ const MindMap = ({ file }: { file: FileData }) => {
     // Combine all edges
     const allVisibleEdges = [...visibleEdges, ...additionalEdges];
 
+    // // Ensure all nodes are atleast this distance apart
+    // const minNodeDistance = 100; // Minimum distance between nodes
+    // d3Nodes.forEach(node => {
+    //   if (node.parent) {
+    //     if (Math.abs(node.y - node.parent.y) < minNodeDistance) {
+    //       // Adjust y position to ensure minimum distance
+    //       node.y = node.parent.y + minNodeDistance;
+    //     }
+    //   }
+    //   if (node.parent && node.parent.children) {
+    //     const siblings = node.parent.children;
+    //     siblings.sort((a, b) => a.x - b.x);
+    //     for (let i = 1; i < siblings.length; i++) {
+    //       if (siblings[i].x - siblings[i - 1].x < minNodeDistance)
+    //         siblings[i].x = siblings[i - 1].x + minNodeDistance;
+    //     }
+    //   }
+    // })
+
     // Draw links - ensuring all visible edges are rendered
     const links = g.append('g')
       .attr('class', 'links')
@@ -539,51 +764,48 @@ const MindMap = ({ file }: { file: FileData }) => {
       .attr('opacity', 0.4)
       .attr('filter', 'url(#glow)');
 
-    // Set initial positions for links
+    // Set initial positions for links based on node starting positions
     links.attr('d', d => {
       const source = d.source as D3Node;
       const target = d.target as D3Node;
 
-      // If this is a new link or connected to a changed node, animate from source
-      if (changedNodeIds.has(source.data.id) || changedNodeIds.has(target.data.id)) {
+      // Get the starting positions for source and target nodes
+      const sourceStartPos = nodeStartPositions.get(source.data.id);
+      const targetStartPos = nodeStartPositions.get(target.data.id);
+
+      if (sourceStartPos && targetStartPos) {
+        // If both nodes have starting positions, draw path from those positions
+        return `M${sourceStartPos.y},${sourceStartPos.x}
+                C${(sourceStartPos.y + targetStartPos.y) / 2},${sourceStartPos.x}
+                 ${(sourceStartPos.y + targetStartPos.y) / 2},${targetStartPos.x}
+                 ${targetStartPos.y},${targetStartPos.x}`;
+      } else {
+        // Fallback if we don't have starting positions
         return `M${source.y},${source.x}
                 C${source.y},${source.x}
                  ${source.y},${source.x}
                  ${source.y},${source.x}`;
-      } else {
-        // Otherwise, show at final position immediately
-        return `M${source.y},${source.x}
-                C${(source.y + target.y) / 2},${source.x}
-                 ${(source.y + target.y) / 2},${target.x}
-                 ${target.y},${target.x}`;
       }
     });
 
-    // Transition only changed links
-    links.filter(d => {
-      const source = d.source as D3Node;
-      const target = d.target as D3Node;
-      return changedNodeIds.has(source.data.id) || changedNodeIds.has(target.data.id);
-    })
+    // Transition all links to their final positions with staggered delay
+    links
       .transition()
       .duration(800)
-      .delay((d, i) => i * 20)
+      .delay((d, i) => {
+        const source = d.source as D3Node;
+        const target = d.target as D3Node;
+        // Delay links based on the depth of their nodes to coordinate with node movements
+        return Math.max(source.depth, target.depth) * 100 + i * 15;
+      })
       .attr('d', d => {
         const source = d.source as D3Node;
         const target = d.target as D3Node;
         return `M${source.y},${source.x}
-              C${(source.y + target.y) / 2},${source.x}
-               ${(source.y + target.y) / 2},${target.x}
-               ${target.y},${target.x}`;
+                C${(source.y + target.y) / 2},${source.x}
+                 ${(source.y + target.y) / 2},${target.x}
+                 ${target.y},${target.x}`;
       })
-      .attr('opacity', 0.8);
-
-    // Set all other links to full opacity immediately
-    links.filter(d => {
-      const source = d.source as D3Node;
-      const target = d.target as D3Node;
-      return !changedNodeIds.has(source.data.id) && !changedNodeIds.has(target.data.id);
-    })
       .attr('opacity', 0.8);
 
     // Draw nodes with targeted transition
@@ -594,32 +816,31 @@ const MindMap = ({ file }: { file: FileData }) => {
       .enter()
       .append('g')
       .attr('class', 'node')
+      .attr('data-node-id', d => d.data.id) // Add this line to make nodes selectable by ID
       .attr('transform', d => {
-        // For changed nodes, start from parent's position or current position if it's the root
-        if (changedNodeIds.has(d.data.id)) {
-          if (d.parent) {
-            return `translate(${d.parent.y},${d.parent.x})`;
-          }
-          return `translate(${d.y},${d.x})`;
-        } else {
-          // For unchanged nodes, place directly at their final position
-          return `translate(${d.y},${d.x})`;
+        // Get the starting position from our map
+        const startPos = nodeStartPositions.get(d.data.id);
+        if (startPos) {
+          return `translate(${startPos.y},${startPos.x})`;
         }
+        // Fallback if we don't have a starting position
+        return `translate(${d.y},${d.x})`;
       })
-      .attr('opacity', d => changedNodeIds.has(d.data.id) ? 0.4 : 1);
+      .attr('opacity', 0.6); // Start with reduced opacity for all nodes
 
-    // Node background rectangles with color coding
+    // Node background rectangles with color coding - updated to use dynamic width
     nodeGroups.append('rect')
       .attr('rx', 8)
       .attr('ry', 8)
       .attr('width', d => {
-        const level = d.data.level;
-        return level === 0 ? 180 : 140;
+        // Use calculated width from nodeWidths map
+        return nodeWidths.get(d.data.id) || (d.data.level === 0 ? 180 : 140);
       })
       .attr('height', 50)
       .attr('x', d => {
-        const level = d.data.level;
-        return level === 0 ? -90 : -70;
+        // Center the rectangle based on its width
+        const width = nodeWidths.get(d.data.id) || (d.data.level === 0 ? 180 : 140);
+        return -width / 2;
       })
       .attr('y', -25)
       .attr('fill', d => {
@@ -638,7 +859,7 @@ const MindMap = ({ file }: { file: FileData }) => {
         return changedNodeIds.has(d.data.id) ? 'scale(0.8)' : 'scale(1)';
       });
 
-    // Node labels with conditional opacity
+    // Node labels - updated to show full text without truncation
     nodeGroups.append('text')
       .attr('dy', 5)
       .attr('text-anchor', 'middle')
@@ -646,12 +867,9 @@ const MindMap = ({ file }: { file: FileData }) => {
       .style('font-size', d => d.data.level === 0 ? '14px' : '12px')
       .style('font-weight', d => d.data.level === 0 ? 'bold' : 'normal')
       .style('opacity', d => changedNodeIds.has(d.data.id) ? 0 : 1)
-      .text(d => {
-        const label = d.data.label;
-        return label.length > 22 ? label.substring(0, 19) + '...' : label;
-      });
+      .text(d => d.data.label); // Show full text without truncation
 
-    // Add collapse/expand arrows with better handling
+    // Add collapse/expand arrows with better handling - updated to position based on node width
     const arrowGroups = nodeGroups.filter(d => {
       // Only show arrow if node has children in data and those children exist in nodeMap
       const children = edges.filter(e => e.source === d.data.id).map(e => nodeMap.get(e.target)).filter(Boolean);
@@ -661,9 +879,9 @@ const MindMap = ({ file }: { file: FileData }) => {
       .attr('class', 'collapse-arrow')
       .attr('data-node-id', d => d.data.id)
       .attr('transform', d => {
-        const level = d.data.level;
-        const width = level === 0 ? 180 : 160;
-        return `translate(${width / 2 - 30}, 0)`;
+        // Position arrow based on dynamic node width
+        const width = nodeWidths.get(d.data.id) || (d.data.level === 0 ? 180 : 140);
+        return `translate(${width / 2 - 15}, 0)`; // Adjusted position
       })
       .style('cursor', 'pointer');
 
@@ -714,50 +932,46 @@ const MindMap = ({ file }: { file: FileData }) => {
           .on('end', repeat);
       });
 
-    // Apply transitions only to changed nodes
-    nodeGroups.filter(d => changedNodeIds.has(d.data.id))
+    // Apply transitions to all nodes
+    nodeGroups
       .transition()
       .duration(800)
-      .delay((d, i) => i * 20)
+      .delay((d, i) => {
+        // Stagger transitions based on depth and index
+        return d.depth * 100 + i * 20;
+      })
       .attr('transform', d => `translate(${d.y},${d.x})`)
       .attr('opacity', 1)
       .on('end', function () {
-        // Use this reference for the D3 selection
-        // Capture sendNodeQuery function in closure for the event handler
+        // Add click event after transition is complete
         const sendQuery = sendNodeQuery;
         d3.select(this).on('click', function (event, d: any) {
           event.stopPropagation();
-          // Ensure we have the correct data type
           if (d && d.data) {
             sendQuery(d.data);
           }
         });
       });
 
-    // Add click events to all non-transitioning nodes immediately
-    nodeGroups.filter(d => !changedNodeIds.has(d.data.id))
-      .on('click', function (event, d: any) {
-        event.stopPropagation();
-        // Ensure we have the correct data type
-        if (d && d.data) {
-          sendNodeQuery(d.data);
-        }
-      });
+    // Remove the separate transitions for changed nodes since we're now transitioning all nodes
+    // Remove nodeGroups.filter(d => !changedNodeIds.has(d.data.id)) click handler
 
-    // Animate rectangles to final size (only for changed nodes)
-    nodeGroups.filter(d => changedNodeIds.has(d.data.id))
+    // Animate rectangles to final size for all nodes with staggered delay
+    nodeGroups
       .select('rect')
+      .attr('transform', 'scale(0.8)') // Start all rectangles slightly smaller
       .transition()
       .duration(600)
-      .delay((d, i) => i * 20 + 200)
+      .delay((d, i) => d.depth * 100 + i * 20 + 200)
       .attr('transform', 'scale(1)');
 
-    // Fade in text (only for changed nodes)
-    nodeGroups.filter(d => changedNodeIds.has(d.data.id))
+    // Fade in text for all nodes with staggered delay
+    nodeGroups
       .select('text')
+      .style('opacity', 0) // Start all text transparent
       .transition()
       .duration(400)
-      .delay((d, i) => i * 20 + 400)
+      .delay((d, i) => d.depth * 100 + i * 20 + 400)
       .style('opacity', 1);
 
     // Restore the previous transform
