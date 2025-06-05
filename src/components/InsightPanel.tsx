@@ -31,6 +31,58 @@ const InsightPanel = ({ file }: { file: FileData }) => {
   const formatName = (name: string | number, maxLen = 12): string =>
     typeof name === 'string' ? (name.length > maxLen ? `${name.substring(0, maxLen)}...` : name) : String(name);
 
+  // Load chat history from local storage when component mounts or file changes
+  useEffect(() => {
+    try {
+      const savedChat = localStorage.getItem(`chat_history_${file.id}`);
+      const savedReviews = localStorage.getItem(`chat_reviews_${file.id}`);
+      const savedReviewedIdx = localStorage.getItem(`chat_reviewed_idx_${file.id}`);
+
+      if (savedChat) {
+        setChat(JSON.parse(savedChat));
+      }
+
+      if (savedReviews) {
+        setReviewStars(JSON.parse(savedReviews));
+      }
+
+      if (savedReviewedIdx) {
+        setReviewedIdx(JSON.parse(savedReviewedIdx));
+      }
+    } catch (err) {
+      console.error('Error loading chat history from localStorage:', err);
+    }
+  }, [file.id]);
+
+  // Save chat history to local storage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(`chat_history_${file.id}`, JSON.stringify(chat));
+    } catch (err) {
+      console.error('Error saving chat history to localStorage:', err);
+    }
+  }, [chat, file.id]);
+
+  // Save review stars to local storage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(`chat_reviews_${file.id}`, JSON.stringify(reviewStars));
+    } catch (err) {
+      console.error('Error saving review stars to localStorage:', err);
+    }
+  }, [reviewStars, file.id]);
+
+  // Save reviewed index to local storage whenever it changes
+  useEffect(() => {
+    try {
+      if (reviewedIdx !== null) {
+        localStorage.setItem(`chat_reviewed_idx_${file.id}`, JSON.stringify(reviewedIdx));
+      }
+    } catch (err) {
+      console.error('Error saving reviewed index to localStorage:', err);
+    }
+  }, [reviewedIdx, file.id]);
+
   // Listen for query events from MindMap component
   useEffect(() => {
     // Handler for the custom event
